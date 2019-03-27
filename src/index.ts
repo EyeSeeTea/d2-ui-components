@@ -7,6 +7,7 @@ import OrgUnitsSelector from "./org-units-selector/OrgUnitsSelector";
 import { withSnackbar } from "./snackbar";
 import SnackbarProvider from "./snackbar/SnackbarProvider";
 import ObjectsTable from "./objects-table/ObjectsTable";
+import DateTableFilter from "./date-table-filter/DateTableFilter";
 
 import "./locales";
 
@@ -20,4 +21,5 @@ export {
     SnackbarProvider,
     withSnackbar,
     ObjectsTable,
+    DateTableFilter,
 };
