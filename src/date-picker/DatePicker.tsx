@@ -14,6 +14,7 @@ export interface DatePickerProps {
     value?: Date;
     onChange: (date: Date) => {};
     isFilter?: boolean;
+    format?: string;
 }
 
 const colors: { filter: Dictionary<string>; form: Dictionary<string> } = {
@@ -34,6 +35,7 @@ class DatePicker extends React.PureComponent<DatePickerProps> {
         onChange: PropTypes.func.isRequired,
         placeholder: PropTypes.string,
         isFilter: PropTypes.bool,
+        format: PropTypes.string,
     };
 
     getMaterialTheme = (isFilter: boolean, colors: Dictionary<string>) =>
@@ -82,8 +84,8 @@ class DatePicker extends React.PureComponent<DatePickerProps> {
         });
 
     render() {
-        const { placeholder, value, onChange, isFilter, label } = this.props;
-        const format = moment.localeData().longDateFormat("L");
+        const { placeholder, value, onChange, isFilter, label, format } = this.props;
+        const dateFormat = format || moment.localeData().longDateFormat("L");
         const fieldColors = isFilter ? colors.filter : colors.form;
         const materialTheme = this.getMaterialTheme(isFilter, fieldColors);
         return (
@@ -94,7 +96,7 @@ class DatePicker extends React.PureComponent<DatePickerProps> {
                         label={label}
                         placeholder={placeholder}
                         value={value}
-                        format={format}
+                        format={dateFormat}
                         onChange={onChange}
                         clearable={true}
                         autoOk={true}
