@@ -2,7 +2,14 @@ import React from "react";
 import PropTypes from "prop-types";
 import classNames from "classnames";
 
-import { Snackbar, SnackbarContent, IconButton, withStyles } from "@material-ui/core";
+import {
+    Snackbar,
+    SnackbarContent,
+    IconButton,
+    MuiThemeProvider,
+    createMuiTheme,
+    withStyles,
+} from "@material-ui/core";
 import CheckCircleIcon from "@material-ui/icons/CheckCircle";
 import ErrorIcon from "@material-ui/icons/Error";
 import InfoIcon from "@material-ui/icons/Info";
@@ -23,6 +30,19 @@ const variantIcon = {
     info: InfoIcon,
 };
 
+const theme = createMuiTheme({
+    typography: {
+        useNextVariants: true,
+    },
+    overrides: {
+        MuiSnackbarContent: {
+            message: {
+                maxWidth: "85%",
+            },
+        },
+    },
+});
+
 const CustomSnackbar = ({ snackbarIsOpen, message, variant, closeSnackbar, autoHideDuration }) => {
     const Icon = variantIcon[variant];
     if (!Icon) {
@@ -30,34 +50,36 @@ const CustomSnackbar = ({ snackbarIsOpen, message, variant, closeSnackbar, autoH
     }
 
     return (
-        <Snackbar
-            anchorOrigin={anchorOrigin}
-            open={snackbarIsOpen}
-            autoHideDuration={autoHideDuration}
-            onClose={closeSnackbar}
-        >
-            <SnackbarContent
-                className={classes[variant]}
-                aria-describedby="client-snackbar"
-                message={
-                    <span id="client-snackbar" className={classes.message}>
-                        <Icon className={classNames(classes.icon, classes.iconVariant)} />
-                        {message}
-                    </span>
-                }
-                action={[
-                    <IconButton
-                        key="close"
-                        aria-label="Close"
-                        color="inherit"
-                        className={classes.close}
-                        onClick={closeSnackbar}
-                    >
-                        <CloseIcon className={classes.icon} />
-                    </IconButton>,
-                ]}
-            />
-        </Snackbar>
+        <MuiThemeProvider theme={theme}>
+            <Snackbar
+                anchorOrigin={anchorOrigin}
+                open={snackbarIsOpen}
+                autoHideDuration={autoHideDuration}
+                onClose={closeSnackbar}
+            >
+                <SnackbarContent
+                    className={classes[variant]}
+                    aria-describedby="client-snackbar"
+                    message={
+                        <span id="client-snackbar" className={classes.message}>
+                            <Icon className={classNames(classes.icon, classes.iconVariant)} />
+                            {message}
+                        </span>
+                    }
+                    action={[
+                        <IconButton
+                            key="close"
+                            aria-label="Close"
+                            color="inherit"
+                            className={classes.close}
+                            onClick={closeSnackbar}
+                        >
+                            <CloseIcon className={classes.icon} />
+                        </IconButton>,
+                    ]}
+                />
+            </Snackbar>
+        </MuiThemeProvider>
     );
 };
 
