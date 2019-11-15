@@ -102,6 +102,8 @@ const MyOrgUnitsSelector = () => (
         rootIds={["ImspTQPwCqd"]}
         listParams={{ maxLevel: 4 }}
         withElevation={false}
+        typeInput="radio"
+        selectableLevels=[1,3] // the biggest selectableLevel has not children in OrgUnitTree
     />
 );
 ```
