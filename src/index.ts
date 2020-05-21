@@ -6,6 +6,7 @@ import SimpleCheckBox from "./simple-check-box/SimpleCheckBox";
 import "./locales";
 
 export * from "./confirmation-dialog/ConfirmationDialog";
+export * from "./confirmation-dialog/useConfirmationDialog";
 export * from "./data-table/DataTable";
 export * from "./data-table/ObjectsTable";
 export * from "./data-table/types";
