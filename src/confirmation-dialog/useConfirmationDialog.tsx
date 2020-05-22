@@ -2,10 +2,18 @@ import React, { useCallback, useState } from "react";
 import { ConfirmationDialog, ConfirmationDialogProps } from "./ConfirmationDialog";
 
 export interface ConfirmationDialogHookState extends Omit<ConfirmationDialogProps, "isOpen"> {
-    autoClose: boolean;
+    autoClose?: boolean;
 }
 
-export function useConfirmationDialog(initialState: ConfirmationDialogHookState | null = null) {
+export type ConfirmationDialogHookResult = [
+    (props: ConfirmationDialogProps) => JSX.Element | null,
+    (state: ConfirmationDialogHookState) => void,
+    () => void
+];
+
+export function useConfirmationDialog(
+    initialState: ConfirmationDialogHookState | null = null
+): ConfirmationDialogHookResult {
     const [modalState, updateModal] = useState<ConfirmationDialogHookState | null>(initialState);
     const closeModal = useCallback(() => updateModal(null), []);
 
