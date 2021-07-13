@@ -73,6 +73,10 @@ const SnackbarConsumer = () => {
                 if (!state) throw new Error("Snackbar context has not been defined");
                 const { isOpen, message, variant, closeSnackbar, autoHideDuration } = state;
 
+                function notifyClose(_ev: React.SyntheticEvent<any>, reason: string) {
+                    if (reason !== "clickaway") closeSnackbar();
+                }
+
                 if (!variant || !variantIcon[variant]) {
                     throw new Error(`Unknown variant: ${variant}`);
                 }
@@ -85,7 +89,7 @@ const SnackbarConsumer = () => {
                         anchorOrigin={anchorOrigin}
                         open={isOpen}
                         autoHideDuration={autoHideDuration}
-                        onClose={closeSnackbar}
+                        onClose={notifyClose}
                     >
                         <SnackbarContent
                             className={classes[variant]}
