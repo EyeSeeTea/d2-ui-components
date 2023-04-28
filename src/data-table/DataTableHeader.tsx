@@ -150,6 +150,7 @@ export function DataTableHeader<T extends ReferenceObject>(props: DataTableHeade
                                     onClick={createSortHandler(column.name)}
                                     IconComponent={ExpandMoreIcon}
                                     disabled={column.sortable === false}
+                                    hideSortIcon={column.sortable === false}
                                 >
                                     {column.text}
                                 </TableSortLabel>
