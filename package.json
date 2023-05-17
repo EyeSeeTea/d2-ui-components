@@ -7,7 +7,7 @@
         "type": "git",
         "url": "git+https://github.com/eyeseetea/d2-ui-components.git"
     },
-    "version": "2.6.12-beta.4",
+    "version": "2.6.12-beta.6",
     "main": "index.js",
     "types": "index.d.ts",
     "peerDependencies": {
