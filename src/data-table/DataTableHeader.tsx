@@ -140,14 +140,17 @@ export function DataTableHeader<T extends ReferenceObject>(props: DataTableHeade
                             <TableCell
                                 key={`data-table-cell-${column.name}`}
                                 align="left"
-                                sortDirection={field === column.name ? order : false}
+                                sortDirection={
+                                    field === column.name && column.sortable ? order : false
+                                }
                             >
                                 <TableSortLabel
-                                    active={field === column.name}
+                                    active={field === column.name && column.sortable}
                                     direction={order}
                                     onClick={createSortHandler(column.name)}
                                     IconComponent={ExpandMoreIcon}
                                     disabled={column.sortable === false}
+                                    hideSortIcon={column.sortable === false}
                                 >
                                     {column.text}
                                 </TableSortLabel>
