@@ -323,25 +323,25 @@ export default class OrgUnitsSelector extends React.Component {
 
                     <div style={this.contentsStyle}>
                         <div style={styles.contentItem}>
+                            {this.props.showNameSetting ? (
+                                <FormControlLabel
+                                    style={{ paddingLeft: "10px" }}
+                                    control={
+                                        <Switch
+                                            size="small"
+                                            checked={useShortNames}
+                                            onChange={() =>
+                                                this.setState({
+                                                    useShortNames: !useShortNames,
+                                                })
+                                            }
+                                        />
+                                    }
+                                    label={i18n.t("Use short names")}
+                                />
+                            ) : null}
                             {roots.map(root => (
                                 <div key={root.path} className={`ou-root ${getClass(root)}`}>
-                                    {this.props.showNameSetting ? (
-                                        <FormControlLabel
-                                            style={{ paddingLeft: "10px" }}
-                                            control={
-                                                <Switch
-                                                    size="small"
-                                                    checked={useShortNames}
-                                                    onChange={() =>
-                                                        this.setState({
-                                                            useShortNames: !useShortNames,
-                                                        })
-                                                    }
-                                                />
-                                            }
-                                            label={i18n.t("Use short names")}
-                                        />
-                                    ) : null}
                                     <OrgUnitTree
                                         key={useShortNames}
                                         api={api}
