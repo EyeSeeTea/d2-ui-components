@@ -1,4 +1,4 @@
-import { Card, CardContent } from "@material-ui/core";
+import { Card, CardContent, FormControlLabel, Switch } from "@material-ui/core";
 import _ from "lodash";
 import PropTypes from "prop-types";
 import React from "react";
@@ -37,6 +37,8 @@ export default class OrgUnitsSelector extends React.Component {
         square: PropTypes.bool,
         singleSelection: PropTypes.bool,
         selectableIds: PropTypes.arrayOf(PropTypes.string),
+        showShortName: PropTypes.bool,
+        showNameSetting: PropTypes.bool,
     };
 
     static defaultProps = {
@@ -54,6 +56,8 @@ export default class OrgUnitsSelector extends React.Component {
         square: false,
         singleSelection: false,
         selectableIds: undefined,
+        showShortName: false,
+        showNameSetting: false,
     };
 
     static childContextTypes = {
@@ -75,6 +79,7 @@ export default class OrgUnitsSelector extends React.Component {
                 orgUnitGroupId: null,
                 programId: null,
             },
+            useShortNames: props.showShortName,
         };
         this.contentsStyle = { ...styles.contents, height: props.height };
     }
@@ -273,7 +278,15 @@ export default class OrgUnitsSelector extends React.Component {
     render() {
         if (!this.state.levels) return null;
 
-        const { levels, currentRoot, roots, groups, programs, selectedFilters } = this.state;
+        const {
+            levels,
+            currentRoot,
+            roots,
+            groups,
+            programs,
+            selectedFilters,
+            useShortNames,
+        } = this.state;
         const {
             api,
             selected,
@@ -312,7 +325,25 @@ export default class OrgUnitsSelector extends React.Component {
                         <div style={styles.contentItem}>
                             {roots.map(root => (
                                 <div key={root.path} className={`ou-root ${getClass(root)}`}>
+                                    {this.props.showNameSetting ? (
+                                        <FormControlLabel
+                                            style={{ paddingLeft: "10px" }}
+                                            control={
+                                                <Switch
+                                                    size="small"
+                                                    checked={useShortNames}
+                                                    onChange={() =>
+                                                        this.setState({
+                                                            useShortNames: !useShortNames,
+                                                        })
+                                                    }
+                                                />
+                                            }
+                                            label={i18n.t("Use short names")}
+                                        />
+                                    ) : null}
                                     <OrgUnitTree
+                                        key={useShortNames}
                                         api={api}
                                         root={root}
                                         selected={selected}
@@ -330,6 +361,7 @@ export default class OrgUnitsSelector extends React.Component {
                                         hideMemberCount={hideMemberCount}
                                         selectOnClick={selectOnClick}
                                         selectableIds={selectableIds}
+                                        useShortNames={useShortNames}
                                     />
                                 </div>
                             ))}
