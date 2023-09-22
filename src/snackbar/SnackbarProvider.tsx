@@ -1,9 +1,9 @@
-import React, { useState } from "react";
+import React, { PropsWithChildren, useState } from "react";
 import SnackbarContext from "./context";
 import SnackbarConsumer from "./SnackbarConsumer";
 import { Message, SnackbarLevel, SnackbarOptions } from "./types";
 
-export const SnackbarProvider: React.FC = ({ children }) => {
+export const SnackbarProvider: React.FC<PropsWithChildren<{}>> = ({ children }) => {
     const [state, setState] = useState<SnackbarOptions>({
         isOpen: false,
         message: "",
