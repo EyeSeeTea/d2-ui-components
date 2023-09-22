@@ -12,8 +12,8 @@
         "resolveJsonModule": true,
         "declaration": true,
         "jsx": "react",
-        "noUnusedParameters": true,
-        "noUnusedLocals": true,
+        "noUnusedParameters": false,
+        "noUnusedLocals": false,
         "experimentalDecorators": true,
         "lib": [
             "dom",

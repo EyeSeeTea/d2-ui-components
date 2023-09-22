@@ -1,5 +1,5 @@
 import MomentUtils from "@date-io/moment";
-import { createMuiTheme, MuiThemeProvider } from "@material-ui/core";
+import { createTheme, MuiThemeProvider } from "@material-ui/core";
 import {
     DatePicker as MuiDatePicker,
     DatePickerProps as MuiDatePickerProps,
@@ -28,7 +28,7 @@ const colors: { filter: Dictionary<string>; form: Dictionary<string> } = {
 };
 
 const getMaterialTheme = (isFilter: boolean, colors: Dictionary<string>) =>
-    createMuiTheme({
+    createTheme({
         overrides: {
             ...(isFilter && {
                 MuiFormControl: {
