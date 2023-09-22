@@ -25,12 +25,11 @@ export const SearchBox: React.FC<SearchBoxProps> = ({
     const [stateValue, updateStateValue] = useState(value);
     useEffect(() => updateStateValue(value), [value]);
 
-    const onChangeDebounced = useCallback(
-        _.debounce((value: string) => {
+    const onChangeDebounced = React.useMemo(() => {
+        return _.debounce((value: string) => {
             onChange(value);
-        }, debounceTime),
-        [onChange]
-    );
+        }, debounceTime);
+    }, [onChange, debounceTime]);
 
     const onKeyUp = useCallback(
         (event: React.ChangeEvent<HTMLInputElement>) => {

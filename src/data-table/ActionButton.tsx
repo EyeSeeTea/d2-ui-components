@@ -22,7 +22,7 @@ export interface ActionButtonProps {
 export function ActionButton(props: ActionButtonProps) {
     const classes = useStyles();
     const { onClick, label } = props;
-    const variant = !label || React.isValidElement(label) ? "round" : "extended";
+    const variant = !label || React.isValidElement(label) ? "circular" : "extended";
 
     return (
         <Fab
