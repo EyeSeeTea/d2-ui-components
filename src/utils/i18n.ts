@@ -19,4 +19,6 @@ function getStubD2WithTranslations(
     };
 }
 
-export default { t, getStubD2WithTranslations };
+const exports = { t, getStubD2WithTranslations };
+
+export default exports;

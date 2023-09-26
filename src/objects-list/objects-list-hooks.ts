@@ -36,13 +36,13 @@ export interface Pager {
     pageSize: number;
 }
 
-type GetRows<Obj extends ReferenceObject> = (
+export type GetRows<Obj extends ReferenceObject> = (
     search: string,
     paging: TablePagination,
     sorting: TableSorting<Obj>
 ) => Promise<{ objects: Obj[]; pager: Pager }>;
 
-type GetAllIds<Obj extends ReferenceObject> = (
+export type GetAllIds<Obj extends ReferenceObject> = (
     search: string,
     sorting: TableSorting<Obj>
 ) => Promise<string[]>;
