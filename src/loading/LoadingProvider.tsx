@@ -3,7 +3,11 @@ import LoadingContext from "./context";
 import LoadingConsumer from "./LoadingConsumer";
 import { LoadingOptions } from "./types";
 
-export const LoadingProvider: React.FC = ({ children }) => {
+type LoadingProviderProps = {
+    children: React.ReactNode;
+};
+
+export const LoadingProvider: React.FC<LoadingProviderProps> = ({ children }) => {
     const [state, setState] = useState<LoadingOptions>({
         isLoading: false,
         message: "",
