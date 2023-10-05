@@ -71,8 +71,10 @@ class OrgUnitTree extends React.Component {
     setChildState(children) {
         if (this.props.onChildrenLoaded) this.props.onChildrenLoaded(children);
 
+        const keyToOrder = this.props.useShortNames ? "shortName" : "displayName";
+
         this.setState({
-            children: children.sort((a, b) => a.displayName.localeCompare(b.displayName)),
+            children: children.sort((a, b) => a[keyToOrder].localeCompare(b[keyToOrder])),
             loading: false,
         });
     }
