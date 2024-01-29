@@ -162,6 +162,7 @@ const useStyles = makeStyles(() => ({
 }));
 
 export interface WizardStep {
+    completed?: boolean;
     key: string;
     label: string;
     warning?: string;
