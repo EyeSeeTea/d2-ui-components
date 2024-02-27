@@ -86,4 +86,5 @@ export type MouseActionsMapping = Record<"left" | "right", MouseActionMapping>;
 export interface PaginationOptions {
     pageSizeOptions: number[];
     pageSizeInitialValue: number;
+    renderPosition?: { bottom: boolean; top: boolean };
 }
