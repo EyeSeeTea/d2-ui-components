@@ -136,6 +136,7 @@ export function DataTable<T extends ReferenceObject = TableObject>(props: DataTa
         onReorderColumns,
     } = props;
 
+    const renderPosition = paginationOptions.renderPosition || defaultRenderPosition;
     const [stateSelection, updateSelection] = useState(initialState.selection || []);
     const [statePagination, updatePagination] = useState(initialState.pagination);
     const [visibleColumns, updateVisibleColumns] = useState<Array<keyof T>>([]);
@@ -251,6 +252,13 @@ export function DataTable<T extends ReferenceObject = TableObject>(props: DataTa
         }
     };
 
+    const dataTablePaginationOptions = {
+        paginationOptions: paginationOptions,
+        pagination: pagination,
+        defaultTotal: rows.length,
+        onChange: handlePaginationChange,
+    };
+
     return (
         <div className={classes.root}>
             <Toolbar className={classes.toolbar}>
@@ -258,14 +266,11 @@ export function DataTable<T extends ReferenceObject = TableObject>(props: DataTa
                     {filterComponents}
                     <div className={classes.spacer}></div>
                     {loading && <CircularProgress size={30} className={classes.loading} />}
-                    <div className={classes.paginator}>
-                        <DataTablePagination
-                            paginationOptions={paginationOptions}
-                            pagination={pagination}
-                            defaultTotal={rows.length}
-                            onChange={handlePaginationChange}
-                        />
-                    </div>
+                    {renderPosition.top && (
+                        <div className={classes.paginator}>
+                            <DataTablePagination {...dataTablePaginationOptions} />
+                        </div>
+                    )}
                 </React.Fragment>
             </Toolbar>
             <div className={classes.tableWrapper}>
@@ -307,6 +312,13 @@ export function DataTable<T extends ReferenceObject = TableObject>(props: DataTa
                 </Paper>
                 {sideComponents}
             </div>
+
+            {renderPosition.bottom && (
+                <div className={classes.paginator}>
+                    <DataTablePagination {...dataTablePaginationOptions} />
+                </div>
+            )}
+
             {contextMenuTarget && (
                 <ContextualMenu
                     isOpen={!!contextMenuTarget}
@@ -321,3 +333,8 @@ export function DataTable<T extends ReferenceObject = TableObject>(props: DataTa
         </div>
     );
 }
+
+const defaultRenderPosition: NonNullable<PaginationOptions["renderPosition"]> = {
+    top: true,
+    bottom: false,
+};
