@@ -39,6 +39,7 @@ export default class OrgUnitsSelector extends React.Component {
         selectableIds: PropTypes.arrayOf(PropTypes.string),
         showShortName: PropTypes.bool,
         showNameSetting: PropTypes.bool,
+        onUseShortNamesChange: PropTypes.func,
     };
 
     static defaultProps = {
@@ -232,7 +233,10 @@ export default class OrgUnitsSelector extends React.Component {
         return currentRoot ? (
             <div>
                 {i18n.t("For organisation units within")}
-                <span style={styles.ouLabel}>{currentRoot.displayName}</span>:{" "}
+                <span style={styles.ouLabel}>
+                    {this.state.useShortNames ? currentRoot.shortName : currentRoot.displayName}
+                </span>
+                :{" "}
             </div>
         ) : (
             <div>{i18n.t("For all organisation units")}:</div>
@@ -273,6 +277,14 @@ export default class OrgUnitsSelector extends React.Component {
                 programId,
             },
         }));
+    };
+
+    onUseShortNamesChange = () => {
+        const newValue = !this.state.useShortNames;
+        this.setState({ useShortNames: newValue });
+        if (this.props.onUseShortNamesChange) {
+            this.props.onUseShortNamesChange(newValue);
+        }
     };
 
     render() {
@@ -330,11 +342,7 @@ export default class OrgUnitsSelector extends React.Component {
                                         <Switch
                                             size="small"
                                             checked={useShortNames}
-                                            onChange={() =>
-                                                this.setState({
-                                                    useShortNames: !useShortNames,
-                                                })
-                                            }
+                                            onChange={this.onUseShortNamesChange}
                                         />
                                     }
                                     label={i18n.t("Use short names")}

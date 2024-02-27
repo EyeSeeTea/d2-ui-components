@@ -27,7 +27,7 @@ export const Stepper: React.FC<StepperProps> = ({
             {steps.map((step, index) => (
                 <Step
                     key={step.key}
-                    completed={false}
+                    completed={step.completed || false}
                     disabled={index > lastClickableStepIndex}
                     className={"Wizard-Step"}
                 >

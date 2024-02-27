@@ -6,7 +6,7 @@ A button that opens a modal info dialog when clicked.
 
 ```
 import { Icon, IconButton } from "@material-ui/core";
-import { DialogButton } from "d2-ui-components";
+import { DialogButton } from "@eyeseetea/d2-ui-components";
 
 const MyDialogHandler = () => (
     <DialogButton
@@ -28,7 +28,7 @@ const MyDialogHandler = () => (
 A wrapper that creates all the logic needed to build a modal dialog.
 
 ```
-import { ConfirmationDialog } from "d2-ui-components";
+import { ConfirmationDialog } from "@eyeseetea/d2-ui-components";
 
 const MyDialog = () => (
     <ConfirmationDialog
@@ -45,7 +45,7 @@ const MyDialog = () => (
 ## Date Picker
 
 ```
-import { DatePicker } from "d2-ui-components";
+import { DatePicker } from "@eyeseetea/d2-ui-components";
 
 const MyDatePicker = () => (
     <DatePicker
@@ -59,7 +59,7 @@ const MyDatePicker = () => (
 ## Multiple Selector
 
 ```
-import { MultipleSelector } from "d2-ui-components";
+import { MultipleSelector } from "@eyeseetea/d2-ui-components";
 
 const MyMultipleSelector = () => (
     <MultiSelector
@@ -78,7 +78,7 @@ const MyMultipleSelector = () => (
 Visually similar to material-ui checkbox but much lighter, useful when you have lots of checks in a page.
 
 ```
-import { SimpleCheckBox } from "d2-ui-components";
+import { SimpleCheckBox } from "@eyeseetea/d2-ui-components";
 
 const MySimpleCheckBox = () => (
     <SimpleCheckBox
@@ -91,7 +91,7 @@ const MySimpleCheckBox = () => (
 ## Organisation Units selector
 
 ```
-import { OrgUnitsSelector }  from "d2-ui-components";
+import { OrgUnitsSelector }  from "@eyeseetea/d2-ui-components";
 
 const MyOrgUnitsSelector = () => (
     <OrgUnitsSelector
@@ -114,7 +114,7 @@ const MyOrgUnitsSelector = () => (
 There should be a unique snackbar for the whole app, so we need to insert a single provider in the main component:
 
 ```
-import { SnackbarProvider }  from "d2-ui-components";
+import { SnackbarProvider }  from "@eyeseetea/d2-ui-components";
 
 const MyAppWithSnackbar = (
     <SnackbarProvider>
@@ -126,7 +126,7 @@ const MyAppWithSnackbar = (
 To use it, create a HOC with `withSnackbar`, add `snackbar` to your propTypes, and show messages using the functions `props.snackbar[.level]`. Levels supported: _success_, _error_, _info_, _warning_.
 
 ```
-import { withSnackbar } from "d2-ui-components";
+import { withSnackbar } from "@eyeseetea/d2-ui-components";
 import PropTypes from "prop-types";
 
 const MyComponent = ({name, snackbar}) => (
@@ -151,7 +151,7 @@ export default withSnackbar(MyComponent);
 There should be a unique loading mask for the whole app, so we need to insert a single provider in the main component:
 
 ```
-import { LoadingProvider }  from "d2-ui-components";
+import { LoadingProvider }  from "@eyeseetea/d2-ui-components";
 
 const MyAppWithLoadingMask = (
     <LoadingProvider>
@@ -163,7 +163,7 @@ const MyAppWithLoadingMask = (
 To use it, create a HOC with `withLoading`, add `loading` to your propTypes, and show the mask using the functions `props.loading.show()`.
 
 ```
-import { withLoading } from "d2-ui-components";
+import { withLoading } from "@eyeseetea/d2-ui-components";
 import PropTypes from "prop-types";
 
 const MyComponent = ({name, loading}) => (
@@ -313,7 +313,7 @@ const MyWizard = props => {
 ```
 import React from "react";
 import { D2Api } from "d2-api";
-import { Sharing, MetaObject } from "d2-ui-components";
+import { Sharing, MetaObject } from "@eyeseetea/d2-ui-components";
 
 const initialSharedObject: MetaObject = {
     meta: {
