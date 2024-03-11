@@ -18,6 +18,7 @@ export const Wizard: React.FC<WizardProps> = ({
     onStepChange,
     useSnackFeedback = false,
     lastClickableStepIndex: initialLastClickableStepIndex = 0,
+    stepsDisableUntilReached = true,
     StepperComponent = Stepper,
     NavigationComponent = Navigation,
 }) => {
@@ -113,6 +114,7 @@ export const Wizard: React.FC<WizardProps> = ({
                 lastClickableStepIndex={lastClickableStepIndex}
                 currentStepKey={currentStepKey}
                 onStepClicked={onStepClicked}
+                stepsDisableUntilReached={stepsDisableUntilReached}
             />
 
             {useSnackFeedback && <FeedbackMessages messages={messages} />}
@@ -162,15 +164,15 @@ const useStyles = makeStyles(() => ({
 }));
 
 export interface WizardStep {
-    completed?: boolean;
+    component: ReactComponentLike;
     key: string;
     label: string;
     warning?: string;
     description?: string;
-    component: ReactComponentLike;
     props?: object;
     help?: React.ReactNode;
     helpDialogIsInitialOpen?: boolean;
+    completed?: boolean;
 }
 
 export interface WizardProps {
@@ -179,6 +181,7 @@ export interface WizardProps {
     initialStepKey?: string;
     useSnackFeedback?: boolean;
     lastClickableStepIndex?: number;
+    stepsDisableUntilReached?: boolean;
     steps: WizardStep[];
     NavigationComponent?: (props: NavigationProps) => ReactElement | null;
     StepperComponent?: (props: StepperProps) => ReactElement | null;

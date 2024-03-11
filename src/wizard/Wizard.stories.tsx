@@ -35,24 +35,27 @@ const TrendComponent = () => {
     );
 };
 
-export const steps = [
+const steps = [
     {
         key: "configuration",
         label: "Configuration",
         completed: false,
         component: ConfigurationComponent,
+        disableUntilReached: false,
     },
     {
         key: "outlier",
         label: "Outliers",
         completed: true,
         component: OutlierComponent,
+        disableUntilReached: false,
     },
     {
         key: "trends",
         label: "Trends",
         completed: false,
         component: TrendComponent,
+        disableUntilReached: false,
     },
 ];
 
@@ -70,5 +73,6 @@ export const Primary: Story = {
     args: {
         initialStepKey: "outlier",
         steps: steps,
+        stepsDisableUntilReached: false,
     },
 };

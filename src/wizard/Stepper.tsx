@@ -9,6 +9,7 @@ export const Stepper: React.FC<StepperProps> = ({
     lastClickableStepIndex = 0,
     currentStepKey,
     onStepClicked,
+    stepsDisableUntilReached,
 }) => {
     const classes = useStyles();
 
@@ -28,7 +29,7 @@ export const Stepper: React.FC<StepperProps> = ({
                 <Step
                     key={step.key}
                     completed={step.completed || false}
-                    disabled={index > lastClickableStepIndex}
+                    disabled={stepsDisableUntilReached ?? index > lastClickableStepIndex}
                     className={"Wizard-Step"}
                 >
                     <StepButton
@@ -55,6 +56,7 @@ export interface StepperProps {
     lastClickableStepIndex?: number;
     currentStepKey?: string;
     onStepClicked?: (stepKey: string) => EventHandler;
+    stepsDisableUntilReached?: boolean;
 }
 
 const useStyles = makeStyles(() => ({
