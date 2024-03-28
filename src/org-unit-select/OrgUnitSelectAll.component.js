@@ -52,8 +52,13 @@ class OrgUnitSelectAll extends React.Component {
         } else {
             this.setState({ loading: true });
 
+            const filters =
+                this.props.selectableLevels && this.props.selectableLevels.length > 0
+                    ? { level: { in: this.props.selectableLevels } }
+                    : undefined;
+
             this.context.api.models.organisationUnits
-                .get({ fields: { id: true, path: true }, paging: false })
+                .get({ fields: { id: true, path: true }, paging: false, filter: filters })
                 .getData()
                 .then(({ objects }) => {
                     this.addToSelection(objects);
