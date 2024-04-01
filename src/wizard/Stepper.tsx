@@ -4,6 +4,14 @@ import React, { MouseEvent } from "react";
 import { Help } from "./Help";
 import { WizardStep } from "./Wizard";
 
+const currentStepClassName = "current-step";
+
+function mergeStepClasses(className: string | undefined, isActive: boolean): string {
+    return _([isActive ? currentStepClassName : undefined, className])
+        .compact()
+        .join(" ");
+}
+
 export const Stepper: React.FC<StepperProps> = ({
     steps,
     lastClickableStepIndex = 0,
@@ -29,14 +37,15 @@ export const Stepper: React.FC<StepperProps> = ({
                     key={step.key}
                     completed={step.completed || false}
                     disabled={index > lastClickableStepIndex}
-                    className={"Wizard-Step"}
+                    className={_(["Wizard-Step", step.stepClassName]).compact().value().join(" ")}
                 >
                     <StepButton
                         key={step.key}
+                        {...(step.icon ? { icon: step.icon } : {})}
                         data-test-current={currentStep === step}
                         onClick={onStepClicked ? onStepClicked(step.key) : undefined}
                         classes={{ root: classes.stepButton }}
-                        className={currentStep === step ? "current-step" : ""}
+                        className={mergeStepClasses(step.stepButtonClassName, currentStep === step)}
                     >
                         {step.label}
                     </StepButton>

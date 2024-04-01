@@ -171,6 +171,9 @@ export interface WizardStep {
     props?: object;
     help?: React.ReactNode;
     helpDialogIsInitialOpen?: boolean;
+    icon?: React.ReactNode;
+    stepClassName?: string;
+    stepButtonClassName?: string;
 }
 
 export interface WizardProps {
