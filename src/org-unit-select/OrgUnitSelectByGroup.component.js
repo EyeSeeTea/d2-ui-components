@@ -10,9 +10,8 @@ import {
     renderDropdown,
 } from "./common";
 
-function isSelectableLevelsDefined(selectableLevels) {
-    if (!selectableLevels || selectableLevels.length === 0) return undefined;
-    return selectableLevels;
+export function isSelectableLevelsDefined(selectableLevels) {
+    return !selectableLevels || selectableLevels.length === 0 ? undefined : selectableLevels;
 }
 
 class OrgUnitSelectByGroup extends React.Component {

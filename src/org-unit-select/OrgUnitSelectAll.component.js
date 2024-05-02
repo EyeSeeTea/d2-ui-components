@@ -5,6 +5,7 @@ import Button from "@material-ui/core/Button";
 import i18n from "../utils/i18n";
 
 import { addToSelection, removeFromSelection } from "./common";
+import { isSelectableLevelsDefined } from "./OrgUnitSelectByGroup.component";
 
 const style = {
     button: {
@@ -52,10 +53,9 @@ class OrgUnitSelectAll extends React.Component {
         } else {
             this.setState({ loading: true });
 
-            const filters =
-                this.props.selectableLevels && this.props.selectableLevels.length > 0
-                    ? { level: { in: this.props.selectableLevels } }
-                    : undefined;
+            const filters = isSelectableLevelsDefined(this.props.selectableLevels)
+                ? { level: { in: this.props.selectableLevels } }
+                : undefined;
 
             this.context.api.models.organisationUnits
                 .get({ fields: { id: true, path: true }, paging: false, filter: filters })

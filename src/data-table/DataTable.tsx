@@ -1,3 +1,4 @@
+import classnames from "classnames";
 import { CircularProgress } from "@material-ui/core";
 import Paper from "@material-ui/core/Paper";
 import { createStyles, makeStyles, Theme } from "@material-ui/core/styles";
@@ -103,11 +104,15 @@ export interface DataTableProps<T extends ReferenceObject> {
     resetKey?: string;
     selectionMessages?: SelectionMessages;
     onReorderColumns?(columns: Array<keyof T>): void;
+    customClasses?: CustomClassesType;
+    stickyHeader?: boolean;
 }
 
 export function DataTable<T extends ReferenceObject = TableObject>(props: DataTableProps<T>) {
     const classes = useStyles();
     const {
+        customClasses,
+        stickyHeader,
         rows,
         columns,
         rowConfig = defaultRowConfig,
@@ -261,7 +266,7 @@ export function DataTable<T extends ReferenceObject = TableObject>(props: DataTa
 
     return (
         <div className={classes.root}>
-            <Toolbar className={classes.toolbar}>
+            <Toolbar className={classnames(classes.toolbar, customClasses?.toolbar)}>
                 <React.Fragment>
                     {filterComponents}
                     <div className={classes.spacer}></div>
@@ -273,9 +278,9 @@ export function DataTable<T extends ReferenceObject = TableObject>(props: DataTa
                     )}
                 </React.Fragment>
             </Toolbar>
-            <div className={classes.tableWrapper}>
-                <Paper className={classes.paper} square>
-                    <Table className={classes.table} size={"medium"}>
+            <div className={classnames(classes.tableWrapper, customClasses?.tableWrapper)}>
+                <Paper className={classnames(classes.paper, customClasses?.paper)} square>
+                    <Table stickyHeader={stickyHeader} className={classes.table} size={"medium"}>
                         <DataTableHeader
                             columns={columns}
                             globalActions={globalActions}
@@ -338,3 +343,6 @@ const defaultRenderPosition: NonNullable<PaginationOptions["renderPosition"]> = 
     top: true,
     bottom: false,
 };
+
+type CssClassName = string;
+type CustomClassesType = { toolbar: CssClassName; paper: CssClassName; tableWrapper: CssClassName };
