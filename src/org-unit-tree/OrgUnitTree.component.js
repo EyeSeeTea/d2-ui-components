@@ -100,6 +100,7 @@ class OrgUnitTree extends React.Component {
                         children: true,
                         path: true,
                         parent: true,
+                        geometry: true,
                     },
                     filter: {
                         id: {

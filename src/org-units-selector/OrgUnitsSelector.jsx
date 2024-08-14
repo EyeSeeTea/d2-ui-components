@@ -40,6 +40,7 @@ export default class OrgUnitsSelector extends React.Component {
         showShortName: PropTypes.bool,
         showNameSetting: PropTypes.bool,
         onUseShortNamesChange: PropTypes.func,
+        onChildrenLoaded: PropTypes.func,
     };
 
     static defaultProps = {
@@ -141,6 +142,7 @@ export default class OrgUnitsSelector extends React.Component {
                 displayName: true,
                 path: true,
                 children: true,
+                geometry: true,
             },
             ...listParams,
         };
@@ -225,6 +227,10 @@ export default class OrgUnitsSelector extends React.Component {
         this.setState(state => ({
             roots: state.roots.map(r => (r.path === root.path ? mergeChildren(r, children) : r)),
         }));
+
+        if (this.props.onChildrenLoaded) {
+            this.props.onChildrenLoaded(children);
+        }
     };
 
     renderOrgUnitSelectTitle = () => {
