@@ -69,7 +69,7 @@ class OrgUnitTree extends React.Component {
     }
 
     setChildState(children) {
-        if (this.props.onChildrenLoaded) this.props.onChildrenLoaded(children);
+        if (this.props.onChildrenLoaded) this.props.onChildrenLoaded.fn(children);
 
         const keyToOrder = this.props.useShortNames ? "shortName" : "displayName";
 
@@ -80,7 +80,7 @@ class OrgUnitTree extends React.Component {
     }
 
     loadChildren() {
-        const { root, api, idsThatShouldBeReloaded } = this.props;
+        const { root, api, idsThatShouldBeReloaded, onChildrenLoaded } = this.props;
 
         if (
             (this.state.children === undefined && !this.state.loading) ||
@@ -89,19 +89,26 @@ class OrgUnitTree extends React.Component {
             this.setState({ loading: true });
 
             const childrenIds = root.children.map(({ id }) => id);
+            const fields = {
+                id: true,
+                level: true,
+                displayName: true,
+                shortName: true,
+                children: true,
+                path: true,
+                parent: true,
+            };
+
+            if (onChildrenLoaded?.fields) {
+                onChildrenLoaded.fields.forEach(field => {
+                    fields[field] = true;
+                });
+            }
+
             api.models.organisationUnits
                 .get({
                     paging: false,
-                    fields: {
-                        id: true,
-                        level: true,
-                        displayName: true,
-                        shortName: true,
-                        children: true,
-                        path: true,
-                        parent: true,
-                        geometry: true,
-                    },
+                    fields,
                     filter: {
                         id: {
                             in: childrenIds,
@@ -111,6 +118,10 @@ class OrgUnitTree extends React.Component {
                 .getData()
                 .then(({ objects }) => {
                     this.setChildState(objects);
+
+                    if (onChildrenLoaded?.fn) {
+                        onChildrenLoaded.fn(objects);
+                    }
                 });
         }
     }
@@ -376,11 +387,16 @@ OrgUnitTree.propTypes = {
     currentRoot: PropTypes.object,
 
     /**
-     * onChildrenLoaded callback, which is triggered when the children of this root org unit have been loaded
+     * onChildrenLoaded is a callback depending on a field, which is triggered when the children of this root org unit have been loaded
      *
-     * The callback receives one argument: An array that contains all the newly loaded org units
+     * The callback receives two argument:
+     * - A fields array that needs to be fetched
+     * - A callback wich get an array that contains all the newly loaded org units
      */
-    onChildrenLoaded: PropTypes.func,
+    onChildrenLoaded: PropTypes.shape({
+        fields: PropTypes.arrayOf(PropTypes.string),
+        fn: PropTypes.func,
+    }),
 
     /**
      * Custom styling for OU labels

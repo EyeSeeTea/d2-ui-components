@@ -40,7 +40,10 @@ export default class OrgUnitsSelector extends React.Component {
         showShortName: PropTypes.bool,
         showNameSetting: PropTypes.bool,
         onUseShortNamesChange: PropTypes.func,
-        onChildrenLoaded: PropTypes.func,
+        onChildrenLoaded: PropTypes.shape({
+            fields: PropTypes.arrayOf(PropTypes.string),
+            fn: PropTypes.func,
+        }),
     };
 
     static defaultProps = {
@@ -228,8 +231,8 @@ export default class OrgUnitsSelector extends React.Component {
             roots: state.roots.map(r => (r.path === root.path ? mergeChildren(r, children) : r)),
         }));
 
-        if (this.props.onChildrenLoaded) {
-            this.props.onChildrenLoaded(children);
+        if (this.props.onChildrenLoaded?.fn) {
+            this.props.onChildrenLoaded.fn(children);
         }
     };
 
@@ -367,10 +370,17 @@ export default class OrgUnitsSelector extends React.Component {
                                         selectableLevels={selectableLevels}
                                         typeInput={typeInput}
                                         onChangeCurrentRoot={this.changeRoot}
-                                        onChildrenLoaded={this.handleChildrenLoaded.bind(
-                                            this,
-                                            root
-                                        )}
+                                        onChildrenLoaded={
+                                            this.props.onChildrenLoaded
+                                                ? {
+                                                      fields: this.props.onChildrenLoaded.fields,
+                                                      fn: this.handleChildrenLoaded.bind(
+                                                          this,
+                                                          root
+                                                      ),
+                                                  }
+                                                : undefined
+                                        }
                                         hideCheckboxes={hideCheckboxes}
                                         hideMemberCount={hideMemberCount}
                                         selectOnClick={selectOnClick}
