@@ -1,5 +1,6 @@
 import React from "react";
 import PropTypes from "prop-types";
+import _ from "lodash";
 import { LinearProgress } from "@material-ui/core";
 
 import { TreeView } from "@dhis2/d2-ui-core";
@@ -89,6 +90,11 @@ class OrgUnitTree extends React.Component {
             this.setState({ loading: true });
 
             const childrenIds = root.children.map(({ id }) => id);
+            const extraFields = _(onChildrenLoaded.fields || [])
+                .map(field => [field, true])
+                .fromPairs()
+                .value();
+
             const fields = {
                 id: true,
                 level: true,
@@ -97,13 +103,8 @@ class OrgUnitTree extends React.Component {
                 children: true,
                 path: true,
                 parent: true,
+                ...extraFields,
             };
-
-            if (onChildrenLoaded?.fields) {
-                onChildrenLoaded.fields.forEach(field => {
-                    fields[field] = true;
-                });
-            }
 
             api.models.organisationUnits
                 .get({
