@@ -111,8 +111,8 @@ export function useObjectsTable<Obj extends ReferenceObject>(
     }, [loadRows, state.sorting, state.pagination]);
 
     useEffect(() => {
-        loadRows(config.initialSorting, initialState.pagination);
-    }, [config.initialSorting, loadRows, initialState.pagination]);
+        loadRows(state.sorting, initialState.pagination);
+    }, [state.sorting, loadRows, initialState.pagination]);
 
     const onChange = useCallback(
         (newState: TableState<Obj>) => {
