@@ -10,6 +10,10 @@ import {
     renderDropdown,
 } from "./common";
 
+export function isSelectableLevelsDefined(selectableLevels) {
+    return !selectableLevels || selectableLevels.length === 0 ? undefined : selectableLevels;
+}
+
 class OrgUnitSelectByGroup extends React.Component {
     constructor(props, context) {
         super(props, context);
@@ -63,7 +67,7 @@ class OrgUnitSelectByGroup extends React.Component {
                 const { api } = this.context;
                 api.models.organisationUnitGroups
                     .get({
-                        fields: { organisationUnits: { id: true, path: true } },
+                        fields: { organisationUnits: { id: true, path: true, level: true } },
                         filter: { id: { eq: groupId } },
                     })
                     .getData()
@@ -73,10 +77,17 @@ class OrgUnitSelectByGroup extends React.Component {
                             `Loaded ${organisationUnits.length} org units for group ${groupId}`
                         );
                         this.setState({ loading: false });
-                        this.groupCache[groupId] = organisationUnits;
-
+                        const levelsToFilter = isSelectableLevelsDefined(
+                            this.props.selectableLevels
+                        );
+                        const filterOrgUnits = levelsToFilter
+                            ? organisationUnits.filter(orgUnit =>
+                                  levelsToFilter.includes(orgUnit.level)
+                              )
+                            : organisationUnits;
+                        this.groupCache[groupId] = filterOrgUnits;
                         // Make a copy of the returned array to ensure that the cache won't be modified from elsewhere
-                        resolve(organisationUnits.slice());
+                        resolve(filterOrgUnits);
                     })
                     .catch(err => {
                         this.setState({ loading: false });

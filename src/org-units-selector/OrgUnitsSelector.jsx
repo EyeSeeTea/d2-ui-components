@@ -424,6 +424,7 @@ export default class OrgUnitsSelector extends React.Component {
                                                         }
                                                         onItemSelection={this.changeOrgUnitGroup}
                                                         selectableIds={selectableIds}
+                                                        selectableLevels={selectableLevels}
                                                     />
                                                 </div>
                                             )}
@@ -453,6 +454,7 @@ export default class OrgUnitsSelector extends React.Component {
                                                 onUpdateSelection={this.handleSelectionUpdate}
                                                 selectableIds={selectableIds}
                                                 selectedFilters={selectedFilters}
+                                                selectableLevels={selectableLevels}
                                             />
                                         </div>
                                     )}
