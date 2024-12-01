@@ -90,21 +90,27 @@ class OrgUnitTree extends React.Component {
             this.setState({ loading: true });
 
             const childrenIds = root.children.map(({ id }) => id);
-            const extraFields = _(onChildrenLoaded.fields || [])
-                .map(field => [field, true])
-                .fromPairs()
-                .value();
 
-            const fields = {
-                id: true,
-                level: true,
-                displayName: true,
-                shortName: true,
-                children: true,
-                path: true,
-                parent: true,
-                ...extraFields,
-            };
+            const extraFields = onChildrenLoaded
+                ? _(onChildrenLoaded.fields || [])
+                      .map(field => [field, true])
+                      .fromPairs()
+                      .value()
+                : undefined;
+
+            const fields = Object.assign(
+                {},
+                {
+                    id: true,
+                    level: true,
+                    displayName: true,
+                    shortName: true,
+                    children: true,
+                    path: true,
+                    parent: true,
+                },
+                extraFields
+            );
 
             api.models.organisationUnits
                 .get({
