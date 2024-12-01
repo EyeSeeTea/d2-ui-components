@@ -24,6 +24,7 @@ export default class OrgUnitsSelector extends React.Component {
         levels: PropTypes.arrayOf(PropTypes.number),
         rootIds: PropTypes.arrayOf(PropTypes.string),
         listParams: PropTypes.object,
+        labelChildren: PropTypes.func,
         controls: PropTypes.shape({
             filterByLevel: PropTypes.bool,
             filterByGroup: PropTypes.bool,
@@ -48,6 +49,7 @@ export default class OrgUnitsSelector extends React.Component {
 
     static defaultProps = {
         levels: null,
+        labelChildren: null,
         controls: {
             filterByLevel: true,
             filterByGroup: true,
@@ -381,6 +383,7 @@ export default class OrgUnitsSelector extends React.Component {
                                                   }
                                                 : undefined
                                         }
+                                        labelChildren={this.props.labelChildren}
                                         hideCheckboxes={hideCheckboxes}
                                         hideMemberCount={hideMemberCount}
                                         selectOnClick={selectOnClick}

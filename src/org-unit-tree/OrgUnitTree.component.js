@@ -173,6 +173,7 @@ class OrgUnitTree extends React.Component {
                     currentRoot={this.props.currentRoot}
                     onChangeCurrentRoot={this.props.onChangeCurrentRoot}
                     labelStyle={this.props.labelStyle}
+                    labelChildren={this.props.labelChildren}
                     selectedLabelStyle={this.props.selectedLabelStyle}
                     arrowSymbol={this.props.arrowSymbol}
                     idsThatShouldBeReloaded={this.props.idsThatShouldBeReloaded}
@@ -297,6 +298,7 @@ class OrgUnitTree extends React.Component {
                 {hasChildren && !this.props.hideMemberCount && !!memberCount && (
                     <span style={styles.memberCount}>({memberCount})</span>
                 )}
+                {this.props.labelChildren && this.props.labelChildren({ currentOu: currentOu })}
             </div>
         );
 
@@ -411,6 +413,11 @@ OrgUnitTree.propTypes = {
     labelStyle: PropTypes.object,
 
     /**
+     * Custom component to render on labels
+     */
+    labelChildren: PropTypes.func,
+
+    /**
      * Custom styling for the labels of selected OUs
      */
     selectedLabelStyle: PropTypes.object,
@@ -455,6 +462,7 @@ OrgUnitTree.defaultProps = {
     currentRoot: undefined,
     onChildrenLoaded: undefined,
     labelStyle: {},
+    labelChildren: null,
     selectedLabelStyle: {},
     typeInput: undefined,
     selectOnClick: false,
