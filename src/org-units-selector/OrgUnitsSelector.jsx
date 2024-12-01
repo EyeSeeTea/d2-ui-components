@@ -45,6 +45,7 @@ export default class OrgUnitsSelector extends React.Component {
             fields: PropTypes.arrayOf(PropTypes.string),
             fn: PropTypes.func,
         }),
+        disabled: PropTypes.bool,
     };
 
     static defaultProps = {
@@ -65,6 +66,7 @@ export default class OrgUnitsSelector extends React.Component {
         selectableIds: undefined,
         showShortName: false,
         showNameSetting: false,
+        disabled: false,
     };
 
     static childContextTypes = {
@@ -324,6 +326,7 @@ export default class OrgUnitsSelector extends React.Component {
             selectOnClick,
             selectableIds,
             initiallyExpanded = roots.length > 1 ? [] : roots.map(ou => ou.path),
+            disabled,
         } = this.props;
         const { filterByLevel, filterByGroup, filterByProgram, selectAll } = controls;
 
@@ -389,6 +392,7 @@ export default class OrgUnitsSelector extends React.Component {
                                         selectOnClick={selectOnClick}
                                         selectableIds={selectableIds}
                                         useShortNames={useShortNames}
+                                        disabled={disabled}
                                     />
                                 </div>
                             ))}
