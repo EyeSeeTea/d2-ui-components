@@ -15,6 +15,7 @@ import ColumnSelectorDialog from "./ColumnSelectorDialog";
 import { ContextualMenu } from "./ContextualMenu";
 import { DataTableNotifications } from "./DataTableNotifications";
 import {
+    Alignment,
     ReferenceObject,
     TableColumn,
     TableGlobalAction,
@@ -59,6 +60,7 @@ export interface DataTableHeaderProps<T extends ReferenceObject> {
     hideColumnVisibilityOptions?: boolean;
     hideSelectAll?: boolean;
     allowReorderingColumns?: boolean;
+    alignment?: Alignment;
 }
 
 export function DataTableHeader<T extends ReferenceObject>(props: DataTableHeaderProps<T>) {
@@ -139,7 +141,7 @@ export function DataTableHeader<T extends ReferenceObject>(props: DataTableHeade
                         return (
                             <TableCell
                                 key={`data-table-cell-${column.name}`}
-                                align="left"
+                                align={props.alignment || column.alignment || "left"}
                                 sortDirection={
                                     field === column.name && column.sortable ? order : false
                                 }

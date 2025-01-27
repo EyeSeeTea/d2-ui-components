@@ -106,6 +106,7 @@ export interface DataTableProps<T extends ReferenceObject> {
     onReorderColumns?(columns: Array<keyof T>): void;
     customClasses?: CustomClassesType;
     stickyHeader?: boolean;
+    columnsAlignment?: "left" | "center" | "right";
 }
 
 export function DataTable<T extends ReferenceObject = TableObject>(props: DataTableProps<T>) {
@@ -297,6 +298,7 @@ export function DataTable<T extends ReferenceObject = TableObject>(props: DataTa
                             hideColumnVisibilityOptions={hideColumnVisibilityOptions}
                             hideSelectAll={hideSelectAll}
                             allowReorderingColumns={allowReorderingColumns}
+                            alignment={props.columnsAlignment}
                         />
                         <DataTableBody
                             rows={rowObjects}
@@ -312,6 +314,7 @@ export function DataTable<T extends ReferenceObject = TableObject>(props: DataTa
                             enableMultipleAction={enableMultipleAction}
                             loading={loading}
                             childrenKeys={childrenKeys}
+                            alignment={props.columnsAlignment}
                         />
                     </Table>
                 </Paper>
