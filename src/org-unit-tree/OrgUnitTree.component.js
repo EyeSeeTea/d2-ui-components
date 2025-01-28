@@ -90,21 +90,27 @@ class OrgUnitTree extends React.Component {
             this.setState({ loading: true });
 
             const childrenIds = root.children.map(({ id }) => id);
-            const extraFields = _(onChildrenLoaded.fields || [])
-                .map(field => [field, true])
-                .fromPairs()
-                .value();
 
-            const fields = {
-                id: true,
-                level: true,
-                displayName: true,
-                shortName: true,
-                children: true,
-                path: true,
-                parent: true,
-                ...extraFields,
-            };
+            const extraFields = onChildrenLoaded
+                ? _(onChildrenLoaded.fields || [])
+                      .map(field => [field, true])
+                      .fromPairs()
+                      .value()
+                : undefined;
+
+            const fields = Object.assign(
+                {},
+                {
+                    id: true,
+                    level: true,
+                    displayName: true,
+                    shortName: true,
+                    children: true,
+                    path: true,
+                    parent: true,
+                },
+                extraFields
+            );
 
             api.models.organisationUnits
                 .get({
@@ -128,7 +134,7 @@ class OrgUnitTree extends React.Component {
     }
 
     handleSelectClick(e) {
-        if (this.props.onSelectClick) {
+        if (!this.props.disabled && this.props.onSelectClick) {
             this.props.onSelectClick(e, this.props.root);
         }
         e.stopPropagation();
@@ -167,6 +173,7 @@ class OrgUnitTree extends React.Component {
                     currentRoot={this.props.currentRoot}
                     onChangeCurrentRoot={this.props.onChangeCurrentRoot}
                     labelStyle={this.props.labelStyle}
+                    labelChildren={this.props.labelChildren}
                     selectedLabelStyle={this.props.selectedLabelStyle}
                     arrowSymbol={this.props.arrowSymbol}
                     idsThatShouldBeReloaded={this.props.idsThatShouldBeReloaded}
@@ -176,6 +183,7 @@ class OrgUnitTree extends React.Component {
                     orgUnitsPathsToInclude={this.props.orgUnitsPathsToInclude}
                     selectableIds={this.props.selectableIds}
                     useShortNames={this.props.useShortNames}
+                    disabled={this.props.disabled}
                 />
             );
         }
@@ -213,6 +221,7 @@ class OrgUnitTree extends React.Component {
             selectableIds,
             selected = [],
             hideCheckboxes,
+            disabled,
         } = this.props;
 
         const maxSelectableLevel = Math.max(...selectableLevels);
@@ -220,7 +229,7 @@ class OrgUnitTree extends React.Component {
         const isSelectable = !isExcluded && this.handleSelectableLevel(selectableLevels, currentOu);
         const pathRegEx = new RegExp(`/${currentOu.id}$`);
         const memberRegEx = new RegExp(`/${currentOu.id}`);
-        const isSelected = selected.some(ou => pathRegEx.test(ou));
+        const isSelected = !disabled && selected.some(ou => pathRegEx.test(ou));
 
         // True if this OU has children = is not a leaf node
         const hasChildren =
@@ -252,8 +261,8 @@ class OrgUnitTree extends React.Component {
             styles.label,
             {
                 fontWeight: isSelected ? 500 : 300,
-                color: isSelected ? "orange" : "inherit",
-                cursor: canBecomeCurrentRoot ? "pointer" : "default",
+                color: isSelected ? "orange" : disabled ? "#757575" : "inherit",
+                cursor: canBecomeCurrentRoot && !disabled ? "pointer" : "default",
             },
             isSelected ? this.props.selectedLabelStyle : this.props.labelStyle
         );
@@ -272,25 +281,31 @@ class OrgUnitTree extends React.Component {
         };
         const handletypeInput = typeInput !== undefined ? typeInput : "checkbox";
 
-        const onClick = this.props.selectOnClick
-            ? this.handleSelectClick
-            : (canBecomeCurrentRoot && setCurrentRoot) || (isSelectable && this.handleSelectClick);
+        const onClick = disabled
+            ? undefined
+            : (this.props.selectOnClick
+                  ? this.handleSelectClick
+                  : (canBecomeCurrentRoot && setCurrentRoot) ||
+                    (isSelectable && this.handleSelectClick)) || undefined;
+
+        const inputClick = disabled ? undefined : this.handleSelectClick;
 
         const label = (
-            <div style={labelStyle} onClick={onClick || undefined} role="button" tabIndex={0}>
+            <div style={labelStyle} onClick={onClick} role="button" tabIndex={0}>
                 {isSelectable && !hideCheckboxes && (
                     <input
                         type={handletypeInput}
                         readOnly
-                        disabled={!isSelectable}
+                        disabled={disabled || !isSelectable}
                         checked={isSelected}
-                        onClick={this.handleSelectClick}
+                        onClick={inputClick}
                     />
                 )}
                 {this.props.useShortNames ? currentOu.shortName : currentOu.displayName}
                 {hasChildren && !this.props.hideMemberCount && !!memberCount && (
                     <span style={styles.memberCount}>({memberCount})</span>
                 )}
+                {this.props.labelChildren && this.props.labelChildren({ currentOu: currentOu })}
             </div>
         );
 
@@ -405,6 +420,11 @@ OrgUnitTree.propTypes = {
     labelStyle: PropTypes.object,
 
     /**
+     * Custom component to render on labels
+     */
+    labelChildren: PropTypes.func,
+
+    /**
      * Custom styling for the labels of selected OUs
      */
     selectedLabelStyle: PropTypes.object,
@@ -438,6 +458,11 @@ OrgUnitTree.propTypes = {
      * Array of org unit ids to filter checkbox selection
      */
     selectableIds: PropTypes.arrayOf(PropTypes.string),
+
+    /**
+     * If true, all orgunits will not be clickable
+     */
+    disabled: PropTypes.bool,
 };
 
 OrgUnitTree.defaultProps = {
@@ -449,6 +474,7 @@ OrgUnitTree.defaultProps = {
     currentRoot: undefined,
     onChildrenLoaded: undefined,
     labelStyle: {},
+    labelChildren: null,
     selectedLabelStyle: {},
     typeInput: undefined,
     selectOnClick: false,
@@ -457,6 +483,7 @@ OrgUnitTree.defaultProps = {
     hideCheckboxes: false,
     hideMemberCount: false,
     orgUnitsPathsToInclude: null,
+    disabled: false,
 };
 
 export default OrgUnitTree;
