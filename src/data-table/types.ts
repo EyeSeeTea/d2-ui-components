@@ -13,7 +13,10 @@ export interface TableColumn<T extends ReferenceObject> {
     sortable?: boolean;
     hidden?: boolean;
     getValue?(row: T, defaultValue: ReactNode): ReactNode;
+    alignment?: Alignment;
 }
+
+export type Alignment = "left" | "center" | "right";
 
 export interface TableAction<T extends ReferenceObject> {
     name: string;
