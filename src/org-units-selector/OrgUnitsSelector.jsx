@@ -24,6 +24,7 @@ export default class OrgUnitsSelector extends React.Component {
         levels: PropTypes.arrayOf(PropTypes.number),
         rootIds: PropTypes.arrayOf(PropTypes.string),
         listParams: PropTypes.object,
+        labelChildren: PropTypes.func,
         controls: PropTypes.shape({
             filterByLevel: PropTypes.bool,
             filterByGroup: PropTypes.bool,
@@ -44,10 +45,12 @@ export default class OrgUnitsSelector extends React.Component {
             fields: PropTypes.arrayOf(PropTypes.string),
             fn: PropTypes.func,
         }),
+        disabled: PropTypes.bool,
     };
 
     static defaultProps = {
         levels: null,
+        labelChildren: null,
         controls: {
             filterByLevel: true,
             filterByGroup: true,
@@ -63,6 +66,7 @@ export default class OrgUnitsSelector extends React.Component {
         selectableIds: undefined,
         showShortName: false,
         showNameSetting: false,
+        disabled: false,
     };
 
     static childContextTypes = {
@@ -322,6 +326,7 @@ export default class OrgUnitsSelector extends React.Component {
             selectOnClick,
             selectableIds,
             initiallyExpanded = roots.length > 1 ? [] : roots.map(ou => ou.path),
+            disabled,
         } = this.props;
         const { filterByLevel, filterByGroup, filterByProgram, selectAll } = controls;
 
@@ -381,11 +386,13 @@ export default class OrgUnitsSelector extends React.Component {
                                                   }
                                                 : undefined
                                         }
+                                        labelChildren={this.props.labelChildren}
                                         hideCheckboxes={hideCheckboxes}
                                         hideMemberCount={hideMemberCount}
                                         selectOnClick={selectOnClick}
                                         selectableIds={selectableIds}
                                         useShortNames={useShortNames}
+                                        disabled={disabled}
                                     />
                                 </div>
                             ))}

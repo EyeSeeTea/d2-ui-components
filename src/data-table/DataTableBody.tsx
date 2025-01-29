@@ -12,6 +12,7 @@ import _ from "lodash";
 import React, { MouseEvent, useState } from "react";
 import i18n from "../utils/i18n";
 import {
+    Alignment,
     MouseActionMapping,
     MouseActionsMapping,
     ReferenceObject,
@@ -69,6 +70,7 @@ export interface DataTableBodyProps<T extends ReferenceObject> {
     loading?: boolean;
     childrenKeys?: string[];
     mouseActionsMapping?: MouseActionsMapping;
+    alignment?: Alignment;
 }
 
 export function DataTableBody<T extends ReferenceObject>(props: DataTableBodyProps<T>) {
@@ -212,7 +214,7 @@ export function DataTableBody<T extends ReferenceObject>(props: DataTableBodyPro
                         <TableCell
                             key={`${labelId}-column-${column.name}`}
                             scope="row"
-                            align="left"
+                            align={props.alignment || column.alignment || "left"}
                             style={cellStyle}
                         >
                             {formatRowValue(column, row)}
