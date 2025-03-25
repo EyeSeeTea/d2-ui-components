@@ -20,6 +20,7 @@ export const Wizard: React.FC<WizardProps> = ({
     lastClickableStepIndex: initialLastClickableStepIndex = 0,
     StepperComponent = Stepper,
     NavigationComponent = Navigation,
+    showNavigationTop = false,
 }) => {
     const classes = useStyles();
     const snackbar = useSnackbar();
@@ -118,6 +119,17 @@ export const Wizard: React.FC<WizardProps> = ({
             {useSnackFeedback && <FeedbackMessages messages={messages} />}
 
             <Paper className={classes.contents} data-wizard-contents={true}>
+                {showNavigationTop && (
+                    <NavigationComponent
+                        steps={steps}
+                        currentStepKey={currentStepKey}
+                        disableNext={!nextStepKey}
+                        disablePrev={!prevStepKey}
+                        onNext={nextStep}
+                        onPrev={prevStep}
+                    />
+                )}
+
                 {warning && <div className={classes.warning}>{warning}</div>}
 
                 {description && <div className={classes.description}>{description}</div>}
@@ -190,6 +202,7 @@ export interface WizardProps {
         newStep: WizardStep
     ) => Promise<string[] | undefined>;
     onStepChange?: (stepKey: string) => void;
+    showNavigationTop?: boolean;
 }
 
 export { NavigationProps as WizardNavigationProps, StepperProps as WizardStepperProps };

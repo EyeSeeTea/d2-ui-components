@@ -7,7 +7,7 @@
         "type": "git",
         "url": "git+https://github.com/eyeseetea/d2-ui-components.git"
     },
-    "version": "2.10.1",
+    "version": "2.10.1-beta.3",
     "main": "index.js",
     "types": "index.d.ts",
     "peerDependencies": {
@@ -88,8 +88,8 @@
         "build-tsc": "tsc --outDir build",
         "build-babel": "babel src/ --out-dir build --extensions \".js,.jsx,.ts,.tsx\"",
         "build-locales": "mkdir -p build/locales && cp -a src/locales/* build/locales",
-        "build-css": "cd src && cp -a --parents **/*.css ../build",
-        "build": "yarn code-quality && yarn build-base",
+        "build-css": "cd src && rsync -a --relative **/*.css ../build/",
+        "build": "yarn localize && yarn code-quality && yarn build-base",
         "build-watch": "yarn build-base && concurrently 'yarn build-babel --watch' 'yarn build-tsc --watch'",
         "code-quality": "yarn lint && yarn prettify && echo disabled yarn test",
         "extract-pot": "d2-i18n-extract -p src/ -o i18n/",
