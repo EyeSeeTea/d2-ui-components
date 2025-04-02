@@ -4,7 +4,7 @@ import { Subject } from "rxjs/Subject";
 import { timer } from "rxjs/observable/timer";
 import { debounce } from "rxjs/operators";
 import { withStyles } from "@material-ui/core/styles";
-import i18n from "@dhis2/d2-i18n";
+import i18n from "../utils/i18n";
 
 import { accessObjectToString } from "./utils";
 import PermissionPicker from "./PermissionPicker";
