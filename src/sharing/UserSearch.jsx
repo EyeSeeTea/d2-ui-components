@@ -1,10 +1,8 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
-import { Subject } from "rxjs/Subject";
-import { timer } from "rxjs/observable/timer";
-import { debounce } from "rxjs/operators";
 import { withStyles } from "@material-ui/core/styles";
 import i18n from "@dhis2/d2-i18n";
+import debounce from "lodash/debounce";
 
 import { accessObjectToString } from "./utils";
 import PermissionPicker from "./PermissionPicker";
@@ -35,6 +33,11 @@ const styles = {
 const searchDelay = 300;
 
 class UserSearch extends Component {
+    constructor(props) {
+        super(props);
+        this.debouncedFetch = debounce(this.fetchSearchResult, searchDelay);
+    }
+
     state = {
         defaultAccess: {
             meta: { canView: true, canEdit: true },
@@ -44,18 +47,12 @@ class UserSearch extends Component {
         searchText: "",
     };
 
-    componentDidMount() {
-        this.inputStream.pipe(debounce(() => timer(searchDelay))).subscribe(searchText => {
-            this.fetchSearchResult(searchText);
-        });
+    componentWillUnmount() {
+        this.debouncedFetch.cancel();
     }
 
     onItemSelected = selected => {
-        // Material UI triggers an 'onUpdateInput' when a search result is clicked. Therefore, we
-        // immediately pushes a new item to the search stream to prevent the stream from searching
-        // for the item again.
-        this.inputStream.next("");
-
+        this.debouncedFetch("");
         const selection = this.state.searchResult.find(r => r.id === selected.id);
 
         const type = selection.type;
@@ -74,8 +71,6 @@ class UserSearch extends Component {
         }
         this.clearSearchText();
     };
-
-    inputStream = new Subject();
 
     hasNoCurrentAccess = userOrGroup => this.props.currentAccessIds.indexOf(userOrGroup.id) === -1;
 
@@ -102,7 +97,7 @@ class UserSearch extends Component {
     };
 
     onInputChanged = searchText => {
-        this.inputStream.next(searchText);
+        this.debouncedFetch(searchText);
         this.setState({ searchText });
     };
 

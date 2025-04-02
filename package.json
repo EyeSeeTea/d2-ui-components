@@ -1,5 +1,5 @@
 {
-    "name": "@eyeseetea/d2-ui-components",
+    "name": "d2-ui-components-test",
     "description": "Components for DHIS2 apps",
     "license": "GPL-3.0",
     "author": "EyeSeeTea team",
@@ -7,7 +7,7 @@
         "type": "git",
         "url": "git+https://github.com/eyeseetea/d2-ui-components.git"
     },
-    "version": "2.10.1-beta.3",
+    "version": "2.10.1-beta.20",
     "main": "index.js",
     "types": "index.d.ts",
     "peerDependencies": {
@@ -80,7 +80,6 @@
         "moment": "2.29.4",
         "nano-memoize": "1.2.1",
         "react-linkify": "1.0.0-alpha",
-        "rxjs-compat": "6.6.3",
         "throttle-debounce": "2.1.0"
     },
     "scripts": {

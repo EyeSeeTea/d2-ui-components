@@ -3,7 +3,10 @@ import PropTypes from "prop-types";
 import _ from "lodash";
 import { LinearProgress } from "@material-ui/core";
 
-import { TreeView } from "@dhis2/d2-ui-core";
+// We can copy the whole component to this repo
+// and remove @dhis2/d2-ui-core as dependency?
+// https://github.com/dhis2/d2-ui/blob/v7.4.3/packages/core/src/tree-view/TreeView.component.js
+import TreeView from "@dhis2/d2-ui-core/tree-view/TreeView.component";
 
 const styles = {
     progress: {
