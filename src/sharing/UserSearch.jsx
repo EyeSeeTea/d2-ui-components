@@ -1,8 +1,8 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
 import { withStyles } from "@material-ui/core/styles";
-import i18n from "@dhis2/d2-i18n";
 import debounce from "lodash/debounce";
+import i18n from "../utils/i18n";
 
 import { accessObjectToString } from "./utils";
 import PermissionPicker from "./PermissionPicker";
