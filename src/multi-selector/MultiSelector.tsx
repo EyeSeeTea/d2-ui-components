@@ -1,12 +1,5 @@
 import React from "react";
-import {
-    Button,
-    IconButton,
-    Paper,
-    TextField,
-    makeStyles,
-    deprecatedPropType,
-} from "@material-ui/core";
+import { Button, IconButton, Paper, TextField, makeStyles } from "@material-ui/core";
 import { SelectMultiple } from "./SelectMultiple";
 import ArrowUpward from "@material-ui/icons/ArrowUpward";
 import ArrowDownward from "@material-ui/icons/ArrowDownward";
@@ -25,7 +18,7 @@ export type OptionItem = {
 export type MultiSelectorProps = {
     ordered?: boolean;
     options: Item[];
-    searchFilterLabel?: string;
+    searchFilterLabel?: string | boolean;
     selected: string[];
     onChange: (selected: string[]) => void;
     classes?: {
@@ -39,8 +32,8 @@ export type MultiSelectorProps = {
     height?: number;
 };
 
-export const MultiSelector_ = (props: MultiSelectorProps) => {
-    const { classes, ordered, height = 300, searchFilterLabel, onChange } = props;
+const MultiSelector = (props: MultiSelectorProps) => {
+    const { classes, ordered, height = 300, searchFilterLabel } = props;
 
     const componentClasses = useStyles();
 
@@ -50,7 +43,6 @@ export const MultiSelector_ = (props: MultiSelectorProps) => {
         leftSelectReft,
         rigthSelectReft,
         optionItems,
-        setOptionItems,
         thereAreItemsInLeft,
         thereAreItemsInRight,
         filteredLeft,
@@ -64,14 +56,14 @@ export const MultiSelector_ = (props: MultiSelectorProps) => {
         reorderSelectedItems,
     } = useMultiSelectorMethods(props);
 
-    const placeholderText = searchFilterLabel
-        ? searchFilterLabel
-        : "Search available/selected items";
-
-    React.useEffect(() => {
-        onChange(optionItems.rightItems.map(item => item.value));
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [optionItems]);
+    const placeholderText = React.useMemo(() => {
+        const defaultText = i18n.t("Search available/selected items");
+        if (typeof searchFilterLabel === "boolean") {
+            return searchFilterLabel ? defaultText : "";
+        } else {
+            return searchFilterLabel ?? defaultText;
+        }
+    }, [searchFilterLabel]);
 
     const showReOrderButtons = ordered && thereAreItemsInRight;
 
@@ -158,7 +150,7 @@ export const MultiSelector_ = (props: MultiSelectorProps) => {
                             variant="contained"
                             color="primary"
                             disabled={!thereAreItemsInLeft}
-                            onClick={() => setOptionItems(prev => moveAllItems("assign", prev))}
+                            onClick={() => moveAllItems("assign")}
                         >
                             {i18n.t("Assign All")} {thereAreItemsInLeft ? filteredLeft.length : ""}{" "}
                             →
@@ -170,7 +162,7 @@ export const MultiSelector_ = (props: MultiSelectorProps) => {
                             variant="contained"
                             color="primary"
                             disabled={!thereAreItemsInRight}
-                            onClick={() => setOptionItems(prev => moveAllItems("remove", prev))}
+                            onClick={() => moveAllItems("remove")}
                         >
                             {i18n.t("Remove All")}{" "}
                             {thereAreItemsInRight ? filteredRight.length : ""} ←
@@ -269,4 +261,4 @@ const useStyles = makeStyles({
     },
 });
 
-export default MultiSelector_;
+export default React.memo(MultiSelector);
