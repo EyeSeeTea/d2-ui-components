@@ -3,7 +3,7 @@ import { Button, IconButton, Paper, TextField, makeStyles } from "@material-ui/c
 import { SelectMultiple } from "./SelectMultiple";
 import ArrowUpward from "@material-ui/icons/ArrowUpward";
 import ArrowDownward from "@material-ui/icons/ArrowDownward";
-import i18n from "../locales";
+import i18n from "../utils/i18n";
 import { useMultiSelectorMethods } from "./hooks";
 
 type Item = { text: string; value: string };
@@ -33,7 +33,7 @@ export type MultiSelectorProps = {
 };
 
 const MultiSelector = (props: MultiSelectorProps) => {
-    const { classes, ordered, height = 300, searchFilterLabel } = props;
+    const { classes, ordered = true, height = 300, searchFilterLabel } = props;
 
     const componentClasses = useStyles();
 
@@ -89,7 +89,6 @@ const MultiSelector = (props: MultiSelectorProps) => {
                         <Paper className={componentClasses.paper}>
                             <SelectMultiple
                                 height={height}
-                                ordered={ordered}
                                 items={filteredLeft}
                                 refSelect={leftSelectReft}
                                 onSelectionChange={selectedValues =>

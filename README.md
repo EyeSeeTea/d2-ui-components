@@ -63,7 +63,6 @@ import { MultipleSelector } from "@eyeseetea/d2-ui-components";
 
 const MyMultipleSelector = () => (
     <MultiSelector
-        d2={d2}
         height={300}
         onChange={values => console.log("New selected values", values)}
         options={[{text: "Option 1", value: "id1"}, {text: "Option 2", value: "id2"}]}

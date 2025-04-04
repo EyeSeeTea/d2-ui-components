@@ -8,7 +8,6 @@ export interface SelectMultipleProps {
     items: Item[];
     onSelectionChange: (selectedValues: string[]) => void;
     onDoubleClick: (value: string) => void;
-    ordered?: boolean;
     refSelect?: React.Ref<HTMLSelectElement>;
     value?: string[];
     height?: number;
@@ -29,7 +28,6 @@ const useStyles = makeStyles({
 
 export const SelectMultiple: React.FC<SelectMultipleProps> = ({
     refSelect,
-    ordered,
     items,
     onSelectionChange,
     onDoubleClick,
@@ -46,12 +44,6 @@ export const SelectMultiple: React.FC<SelectMultipleProps> = ({
         onDoubleClick(e.currentTarget.value);
     };
 
-    const orderedItems = ordered
-        ? _(items)
-              .sortBy(x => x.text)
-              .value()
-        : items;
-
     return (
         <select
             style={{ minHeight: `${height}px` }}
@@ -60,7 +52,7 @@ export const SelectMultiple: React.FC<SelectMultipleProps> = ({
             onChange={handleChange}
             className={classes.select}
         >
-            {orderedItems.map(item => (
+            {items.map(item => (
                 <option
                     className={classes.option}
                     key={item.value}

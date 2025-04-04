@@ -1,6 +1,6 @@
 import React from "react";
 import _ from "lodash";
-import i18n from "../locales";
+import i18n from "../utils/i18n";
 
 import { MultiSelectorProps, OptionItem } from "./MultiSelector";
 
@@ -31,7 +31,10 @@ export const useMultiSelectorMethods = (props: MultiSelectorProps) => {
     React.useEffect(() => {
         setOptionItems(prev => ({
             ...prev,
-            rightItems: uniqueOptions.filter(option => selected.includes(option.value)),
+            rightItems: _(uniqueOptions)
+                .filter(option => selected.includes(option.value))
+                .sortBy(option => selected.indexOf(option.value))
+                .value(),
         }));
     }, [selected, uniqueOptions]);
 
