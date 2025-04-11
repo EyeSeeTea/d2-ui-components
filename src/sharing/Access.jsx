@@ -7,7 +7,7 @@ import GroupIcon from "@material-ui/icons/Group";
 import PublicIcon from "@material-ui/icons/Public";
 import BusinessIcon from "@material-ui/icons/Business";
 import { withStyles } from "@material-ui/core/styles";
-import i18n from "@dhis2/d2-i18n";
+import i18n from "../utils/i18n";
 
 import PermissionPicker from "./PermissionPicker";
 import { accessStringToObject, accessObjectToString } from "./utils";
