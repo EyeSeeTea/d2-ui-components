@@ -107,6 +107,7 @@ export interface DataTableProps<T extends ReferenceObject> {
     customClasses?: CustomClassesType;
     stickyHeader?: boolean;
     columnsAlignment?: "left" | "center" | "right";
+    childrenTransfer?: React.ReactNode;
 }
 
 export function DataTable<T extends ReferenceObject = TableObject>(props: DataTableProps<T>) {
@@ -140,6 +141,7 @@ export function DataTable<T extends ReferenceObject = TableObject>(props: DataTa
         selectionMessages: overrideSelectionMessages,
         allowReorderingColumns,
         onReorderColumns,
+        childrenTransfer,
     } = props;
 
     const renderPosition = paginationOptions.renderPosition || defaultRenderPosition;
@@ -299,6 +301,7 @@ export function DataTable<T extends ReferenceObject = TableObject>(props: DataTa
                             hideSelectAll={hideSelectAll}
                             allowReorderingColumns={allowReorderingColumns}
                             alignment={props.columnsAlignment}
+                            childrenTransfer={childrenTransfer}
                         />
                         <DataTableBody
                             rows={rowObjects}

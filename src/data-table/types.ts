@@ -14,6 +14,7 @@ export interface TableColumn<T extends ReferenceObject> {
     hidden?: boolean;
     getValue?(row: T, defaultValue: ReactNode): ReactNode;
     alignment?: Alignment;
+    disabled?: boolean;
 }
 
 export type Alignment = "left" | "center" | "right";

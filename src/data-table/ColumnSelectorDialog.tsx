@@ -11,13 +11,25 @@ interface ColumnSelectorDialogProps<T extends ReferenceObject> {
     allowReorderingColumns?: boolean;
     onChange: (visibleColumns: (keyof T)[]) => void;
     onCancel: () => void;
+    childrenTransfer?: React.ReactNode;
 }
 
 export function ColumnSelectorDialog<T extends ReferenceObject>(
     props: ColumnSelectorDialogProps<T>
 ) {
-    const { columns, visibleColumns, onChange, onCancel, allowReorderingColumns = true } = props;
-    const sortableColumns = columns.map(({ name, text: label }) => ({ label, value: name }));
+    const {
+        childrenTransfer,
+        columns,
+        visibleColumns,
+        onChange,
+        onCancel,
+        allowReorderingColumns = true,
+    } = props;
+    const sortableColumns = columns.map(({ name, text: label, disabled }) => ({
+        label,
+        value: name,
+        disabled: disabled ?? false,
+    }));
 
     return (
         <ConfirmationDialog
@@ -31,19 +43,22 @@ export function ColumnSelectorDialog<T extends ReferenceObject>(
         >
             <DialogContent>
                 {allowReorderingColumns ? (
-                    <Transfer
-                        options={sortableColumns}
-                        selected={visibleColumns}
-                        enableOrderChange={true}
-                        filterable={true}
-                        filterablePicked={true}
-                        selectedWidth="100%"
-                        optionsWidth="100%"
-                        height="400px"
-                        onChange={({ selected }: { selected: Array<keyof T> }) =>
-                            onChange(selected)
-                        }
-                    />
+                    <>
+                        <Transfer
+                            options={sortableColumns}
+                            selected={visibleColumns}
+                            enableOrderChange={true}
+                            filterable={true}
+                            filterablePicked={true}
+                            selectedWidth="100%"
+                            optionsWidth="100%"
+                            height="400px"
+                            onChange={({ selected }: { selected: Array<keyof T> }) =>
+                                onChange(selected)
+                            }
+                        />
+                        {childrenTransfer}
+                    </>
                 ) : (
                     <TableColumnSelector
                         columns={columns}
