@@ -1,4 +1,5 @@
-import { Transfer } from "@dhis2/ui";
+import _ from "lodash";
+import { Transfer, TransferOption } from "@dhis2/ui";
 import { DialogContent } from "@material-ui/core";
 import React from "react";
 import { ConfirmationDialog, ReferenceObject, TableColumn } from "..";
@@ -12,6 +13,7 @@ interface ColumnSelectorDialogProps<T extends ReferenceObject> {
     onChange: (visibleColumns: (keyof T)[]) => void;
     onCancel: () => void;
     childrenTransfer?: React.ReactNode;
+    keepDisabledColumns?: boolean;
 }
 
 export function ColumnSelectorDialog<T extends ReferenceObject>(
@@ -24,12 +26,33 @@ export function ColumnSelectorDialog<T extends ReferenceObject>(
         onChange,
         onCancel,
         allowReorderingColumns = true,
+        keepDisabledColumns = true,
     } = props;
-    const sortableColumns = columns.map(({ name, text: label, disabled }) => ({
-        label,
-        value: name,
-        disabled: disabled ?? false,
-    }));
+    const sortableColumns = columns.map(
+        ({ name, text: label, disabled }): TransferOption => ({
+            label,
+            value: name.toString(),
+            disabled: disabled ?? false,
+        })
+    );
+
+    const selectedColumns = React.useMemo((): string[] => {
+        const disableColumns = columns.filter(col => col.disabled).map(col => col.name.toString());
+        return _(visibleColumns).map(String).concat(disableColumns).uniq().value();
+    }, [visibleColumns, columns]);
+
+    const updateSelectedColumns = React.useCallback(
+        ({ selected }: { selected: Array<keyof T> }) => {
+            if (keepDisabledColumns) {
+                const mandatoryColumns = columns.filter(col => col.disabled).map(col => col.name);
+                const merged = _(selected).concat(mandatoryColumns).uniq().value();
+                onChange(merged);
+            } else {
+                onChange(selected);
+            }
+        },
+        [keepDisabledColumns, columns, onChange]
+    );
 
     return (
         <ConfirmationDialog
@@ -46,16 +69,14 @@ export function ColumnSelectorDialog<T extends ReferenceObject>(
                     <>
                         <Transfer
                             options={sortableColumns}
-                            selected={visibleColumns}
+                            selected={keepDisabledColumns ? selectedColumns : visibleColumns}
                             enableOrderChange={true}
                             filterable={true}
                             filterablePicked={true}
                             selectedWidth="100%"
                             optionsWidth="100%"
                             height="400px"
-                            onChange={({ selected }: { selected: Array<keyof T> }) =>
-                                onChange(selected)
-                            }
+                            onChange={updateSelectedColumns}
                         />
                         {childrenTransfer}
                     </>
