@@ -9,5 +9,5 @@ yarn install
 yarn build
 yarn publish $publish_opts --new-version "$version" build/
 
-git tag "v$version" -f
+git tag "v$version" -f -m "Release version $version"
 git push --tags
