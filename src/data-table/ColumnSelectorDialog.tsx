@@ -8,13 +8,17 @@ import { TableColumnSelector } from "./TableColumnSelector";
 
 interface ColumnSelectorDialogProps<T extends ReferenceObject> {
     columns: TableColumn<T>[];
-    visibleColumns: (keyof T)[];
+    visibleColumns: TableColumnsType<T>;
     allowReorderingColumns?: boolean;
-    onChange: (visibleColumns: (keyof T)[]) => void;
+    onChange: (visibleColumns: TableColumnsType<T>) => void;
     onCancel: () => void;
     childrenTransfer?: React.ReactNode;
     keepDisabledColumns?: boolean;
 }
+
+type TableColumnsType<T> = (keyof T)[];
+
+type UpdateSelectedColumns<T> = (params: { selected: TableColumnsType<T> }) => void;
 
 export function ColumnSelectorDialog<T extends ReferenceObject>(
     props: ColumnSelectorDialogProps<T>
@@ -36,22 +40,25 @@ export function ColumnSelectorDialog<T extends ReferenceObject>(
         })
     );
 
-    const selectedColumns = React.useMemo((): string[] => {
-        const disableColumns = columns.filter(col => col.disabled).map(col => col.name.toString());
-        return _(visibleColumns).map(String).concat(disableColumns).uniq().value();
-    }, [visibleColumns, columns]);
-
-    const updateSelectedColumns = React.useCallback(
-        ({ selected }: { selected: Array<keyof T> }) => {
-            if (keepDisabledColumns) {
-                const mandatoryColumns = columns.filter(col => col.disabled).map(col => col.name);
-                const merged = _(selected).concat(mandatoryColumns).uniq().value();
-                onChange(merged);
-            } else {
-                onChange(selected);
-            }
+    const mergeWithDisabled = React.useCallback(
+        (selected: TableColumnsType<T>): TableColumnsType<T> => {
+            if (!keepDisabledColumns) return selected;
+            const mandatoryColumns = columns.filter(col => col.disabled).map(col => col.name);
+            return _(selected).concat(mandatoryColumns).uniq().value();
         },
-        [keepDisabledColumns, columns, onChange]
+        [keepDisabledColumns, columns]
+    );
+
+    const selectedColumns = React.useMemo((): string[] => {
+        return mergeWithDisabled(visibleColumns).map(String);
+    }, [visibleColumns, mergeWithDisabled]);
+
+    const updateSelectedColumns = React.useCallback<UpdateSelectedColumns<T>>(
+        ({ selected }) => {
+            // selected is always an empty array if the internal "Remove All ⇍" button is clicked
+            onChange(mergeWithDisabled(selected));
+        },
+        [onChange, mergeWithDisabled]
     );
 
     return (
@@ -69,7 +76,7 @@ export function ColumnSelectorDialog<T extends ReferenceObject>(
                     <>
                         <Transfer
                             options={sortableColumns}
-                            selected={keepDisabledColumns ? selectedColumns : visibleColumns}
+                            selected={selectedColumns}
                             enableOrderChange={true}
                             filterable={true}
                             filterablePicked={true}
