@@ -62,6 +62,8 @@ export interface DataTableHeaderProps<T extends ReferenceObject> {
     allowReorderingColumns?: boolean;
     alignment?: Alignment;
     customConfig?: React.ReactNode;
+    childrenTransfer?: React.ReactNode;
+    keepDisabledColumns?: boolean;
 }
 
 export function DataTableHeader<T extends ReferenceObject>(props: DataTableHeaderProps<T>) {
@@ -83,6 +85,8 @@ export function DataTableHeader<T extends ReferenceObject>(props: DataTableHeade
         hideSelectAll = false,
         allowReorderingColumns,
         customConfig,
+        childrenTransfer,
+        keepDisabledColumns = true,
     } = props;
 
     const { field, order } = sorting;
@@ -130,6 +134,8 @@ export function DataTableHeader<T extends ReferenceObject>(props: DataTableHeade
                     onChange={onVisibleColumnsChange || _.noop}
                     onCancel={() => setOpenColumnSettings(false)}
                     allowReorderingColumns={allowReorderingColumns}
+                    childrenTransfer={childrenTransfer}
+                    keepDisabledColumns={keepDisabledColumns}
                 />
             )}
             <TableHead>

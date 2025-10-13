@@ -108,6 +108,8 @@ export interface DataTableProps<T extends ReferenceObject> {
     stickyHeader?: boolean;
     columnsAlignment?: "left" | "center" | "right";
     customConfig?: React.ReactNode;
+    childrenTransfer?: React.ReactNode;
+    keepDisabledColumns?: boolean;
 }
 
 export function DataTable<T extends ReferenceObject = TableObject>(props: DataTableProps<T>) {
@@ -142,6 +144,8 @@ export function DataTable<T extends ReferenceObject = TableObject>(props: DataTa
         allowReorderingColumns,
         onReorderColumns,
         customConfig,
+        childrenTransfer,
+        keepDisabledColumns = true,
     } = props;
 
     const renderPosition = paginationOptions.renderPosition || defaultRenderPosition;
@@ -302,6 +306,8 @@ export function DataTable<T extends ReferenceObject = TableObject>(props: DataTa
                             allowReorderingColumns={allowReorderingColumns}
                             alignment={props.columnsAlignment}
                             customConfig={customConfig}
+                            childrenTransfer={childrenTransfer}
+                            keepDisabledColumns={keepDisabledColumns}
                         />
                         <DataTableBody
                             rows={rowObjects}
