@@ -34,7 +34,7 @@ export interface ContextualMenuProps<T extends ReferenceObject> {
     onClose(): void;
     actions: TableAction<T>[];
     selection: TableSelection[];
-    customConfig?: React.ReactNode;
+    globalActionComponents?: React.ReactNode;
 }
 
 export function ContextualMenu<T extends ReferenceObject>(props: ContextualMenuProps<T>) {
@@ -47,7 +47,7 @@ export function ContextualMenu<T extends ReferenceObject>(props: ContextualMenuP
         onClose,
         actions,
         selection,
-        customConfig,
+        globalActionComponents,
     } = props;
 
     const handleActionClick = (action: TableAction<T>) => {
@@ -90,7 +90,7 @@ export function ContextualMenu<T extends ReferenceObject>(props: ContextualMenuP
                     </Typography>
                 </MenuItem>
             ))}
-            {customConfig}
+            {globalActionComponents}
         </Menu>
     );
 }

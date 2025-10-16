@@ -107,7 +107,7 @@ export interface DataTableProps<T extends ReferenceObject> {
     customClasses?: CustomClassesType;
     stickyHeader?: boolean;
     columnsAlignment?: "left" | "center" | "right";
-    customConfig?: React.ReactNode;
+    globalActionComponents?: React.ReactNode;
     childrenTransfer?: React.ReactNode;
     keepDisabledColumns?: boolean;
 }
@@ -143,7 +143,7 @@ export function DataTable<T extends ReferenceObject = TableObject>(props: DataTa
         selectionMessages: overrideSelectionMessages,
         allowReorderingColumns,
         onReorderColumns,
-        customConfig,
+        globalActionComponents,
         childrenTransfer,
         keepDisabledColumns = true,
     } = props;
@@ -305,7 +305,7 @@ export function DataTable<T extends ReferenceObject = TableObject>(props: DataTa
                             hideSelectAll={hideSelectAll}
                             allowReorderingColumns={allowReorderingColumns}
                             alignment={props.columnsAlignment}
-                            customConfig={customConfig}
+                            globalActionComponents={globalActionComponents}
                             childrenTransfer={childrenTransfer}
                             keepDisabledColumns={keepDisabledColumns}
                         />
