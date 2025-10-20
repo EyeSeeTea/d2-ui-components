@@ -37,6 +37,7 @@ export interface ObjectsTableProps<T extends ReferenceObject> extends DataTableP
     onActionButtonClick?(event: MouseEvent<unknown>): void;
     actionButtonLabel?: ReactNode;
     className?: string;
+    globalActionComponents?: React.ReactNode;
 }
 
 export function ObjectsTable<T extends ReferenceObject = TableObject>(props: ObjectsTableProps<T>) {

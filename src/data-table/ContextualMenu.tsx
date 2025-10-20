@@ -34,11 +34,21 @@ export interface ContextualMenuProps<T extends ReferenceObject> {
     onClose(): void;
     actions: TableAction<T>[];
     selection: TableSelection[];
+    globalActionComponents?: React.ReactNode;
 }
 
 export function ContextualMenu<T extends ReferenceObject>(props: ContextualMenuProps<T>) {
     const classes = useStyles();
-    const { isOpen, rows, positionLeft, positionTop, onClose, actions, selection } = props;
+    const {
+        isOpen,
+        rows,
+        positionLeft,
+        positionTop,
+        onClose,
+        actions,
+        selection,
+        globalActionComponents,
+    } = props;
 
     const handleActionClick = (action: TableAction<T>) => {
         return () => {
@@ -80,6 +90,7 @@ export function ContextualMenu<T extends ReferenceObject>(props: ContextualMenuP
                     </Typography>
                 </MenuItem>
             ))}
+            {globalActionComponents}
         </Menu>
     );
 }

@@ -2,7 +2,11 @@ import { createTheme, FormControl, InputLabel, MuiThemeProvider } from "@materia
 import cyan from "@material-ui/core/colors/cyan";
 import React from "react";
 
-export type DropdownItem<Value extends string = string> = { value: Value; text: string };
+export type DropdownItem<Value extends string = string> = {
+    value: Value;
+    text: string;
+    disabled?: boolean;
+};
 
 export interface DropdownFormProps {
     className?: string;

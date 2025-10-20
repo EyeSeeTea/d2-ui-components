@@ -61,6 +61,7 @@ export interface DataTableHeaderProps<T extends ReferenceObject> {
     hideSelectAll?: boolean;
     allowReorderingColumns?: boolean;
     alignment?: Alignment;
+    globalActionComponents?: React.ReactNode;
     childrenTransfer?: React.ReactNode;
     keepDisabledColumns?: boolean;
 }
@@ -83,6 +84,7 @@ export function DataTableHeader<T extends ReferenceObject>(props: DataTableHeade
         hideColumnVisibilityOptions = false,
         hideSelectAll = false,
         allowReorderingColumns,
+        globalActionComponents,
         childrenTransfer,
         keepDisabledColumns = true,
     } = props;
@@ -112,6 +114,8 @@ export function DataTableHeader<T extends ReferenceObject>(props: DataTableHeade
             : undefined,
         ...globalActions,
     ]);
+
+    const showTableConfig = tableActions.length > 0 || Boolean(globalActionComponents);
 
     const openTableActions = (event: MouseEvent<HTMLTableHeaderCellElement>) => {
         setContextMenuTarget([event.clientX, event.clientY + event.currentTarget.clientHeight / 2]);
@@ -166,7 +170,7 @@ export function DataTableHeader<T extends ReferenceObject>(props: DataTableHeade
                         );
                     })}
                     <TableCell padding="none" align={"center"} onClick={openTableActions}>
-                        {tableActions.length > 0 && (
+                        {showTableConfig && (
                             <IconButton>
                                 <SettingsIcon />
                             </IconButton>
@@ -193,6 +197,7 @@ export function DataTableHeader<T extends ReferenceObject>(props: DataTableHeade
                     selection={contextMenuRows}
                     actions={tableActions}
                     onClose={closeTableActions}
+                    globalActionComponents={globalActionComponents}
                 />
             )}
         </React.Fragment>
