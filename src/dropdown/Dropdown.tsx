@@ -47,7 +47,7 @@ export const Dropdown: React.FC<DropdownProps> = React.memo(props => {
             >
                 {!hideEmpty && <MenuItem value={""}>{i18n.t("<No value>")}</MenuItem>}
                 {items.map(item => (
-                    <MenuItem key={item.value} value={item.value}>
+                    <MenuItem key={item.value} value={item.value} disabled={item.disabled}>
                         {item.text}
                     </MenuItem>
                 ))}

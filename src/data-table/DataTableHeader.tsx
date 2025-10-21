@@ -61,6 +61,9 @@ export interface DataTableHeaderProps<T extends ReferenceObject> {
     hideSelectAll?: boolean;
     allowReorderingColumns?: boolean;
     alignment?: Alignment;
+    globalActionComponents?: React.ReactNode;
+    childrenTransfer?: React.ReactNode;
+    keepDisabledColumns?: boolean;
 }
 
 export function DataTableHeader<T extends ReferenceObject>(props: DataTableHeaderProps<T>) {
@@ -81,6 +84,9 @@ export function DataTableHeader<T extends ReferenceObject>(props: DataTableHeade
         hideColumnVisibilityOptions = false,
         hideSelectAll = false,
         allowReorderingColumns,
+        globalActionComponents,
+        childrenTransfer,
+        keepDisabledColumns = true,
     } = props;
 
     const { field, order } = sorting;
@@ -109,6 +115,8 @@ export function DataTableHeader<T extends ReferenceObject>(props: DataTableHeade
         ...globalActions,
     ]);
 
+    const showTableConfig = tableActions.length > 0 || Boolean(globalActionComponents);
+
     const openTableActions = (event: MouseEvent<HTMLTableHeaderCellElement>) => {
         setContextMenuTarget([event.clientX, event.clientY + event.currentTarget.clientHeight / 2]);
     };
@@ -126,6 +134,8 @@ export function DataTableHeader<T extends ReferenceObject>(props: DataTableHeade
                     onChange={onVisibleColumnsChange || _.noop}
                     onCancel={() => setOpenColumnSettings(false)}
                     allowReorderingColumns={allowReorderingColumns}
+                    childrenTransfer={childrenTransfer}
+                    keepDisabledColumns={keepDisabledColumns}
                 />
             )}
             <TableHead>
@@ -160,7 +170,7 @@ export function DataTableHeader<T extends ReferenceObject>(props: DataTableHeade
                         );
                     })}
                     <TableCell padding="none" align={"center"} onClick={openTableActions}>
-                        {tableActions.length > 0 && (
+                        {showTableConfig && (
                             <IconButton>
                                 <SettingsIcon />
                             </IconButton>
@@ -187,6 +197,7 @@ export function DataTableHeader<T extends ReferenceObject>(props: DataTableHeade
                     selection={contextMenuRows}
                     actions={tableActions}
                     onClose={closeTableActions}
+                    globalActionComponents={globalActionComponents}
                 />
             )}
         </React.Fragment>
