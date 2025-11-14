@@ -28,7 +28,7 @@ const SelectWrapper: React.FC<SelectProps> = React.memo(props => {
     );
 });
 
-export const DropdownInner = <Value extends string = string>(props: DropdownProps<Value>) => {
+const DropdownInner = <Value extends string = string>(props: DropdownProps<Value>) => {
     const { items, value, onChange, label, hideEmpty, className } = props;
 
     const selectValue =
