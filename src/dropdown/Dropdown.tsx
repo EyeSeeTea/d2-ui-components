@@ -56,6 +56,4 @@ const DropdownInner = <Value extends string = string>(props: DropdownProps<Value
     );
 };
 
-export const Dropdown = React.memo(DropdownInner) as <Value extends string = string>(
-    props: DropdownProps<Value>
-) => JSX.Element;
+export const Dropdown = React.memo(DropdownInner) as typeof DropdownInner;
