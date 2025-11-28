@@ -126,17 +126,24 @@ class OrgUnitSelectByGroup extends React.Component {
     componentDidMount() {
         const { api } = this.context;
         if (this.props.withinUserHierarchyInFilters) {
-            api.get("/organisationUnits/", {
-                paging: false,
-                fields: "id",
-                withinUserHierarchy: this.props.withinUserHierarchyInFilters,
-            })
+            this.setState({ loading: true });
+            api.models.organisationUnits
+                .get({
+                    paging: false,
+                    fields: { id: true },
+                    withinUserHierarchy: this.props.withinUserHierarchyInFilters,
+                })
                 .getData()
                 .then(response => {
-                    if (response.organisationUnits.length > 0) {
-                        const orgUnitIdsSet = new Set(response.organisationUnits.map(ou => ou.id));
+                    if (response.objects.length > 0) {
+                        const orgUnitIdsSet = new Set(response.objects.map(ou => ou.id));
                         this.setState({ orgUnitsInHierarchy: orgUnitIdsSet });
                     }
+                    this.setState({ loading: false });
+                })
+                .catch(err => {
+                    console.error(`OrgUnitSelectByGroup: ${err.message}`);
+                    this.setState({ loading: false });
                 });
         }
     }
