@@ -46,6 +46,7 @@ export default class OrgUnitsSelector extends React.Component {
             fn: PropTypes.func,
         }),
         disabled: PropTypes.bool,
+        withinUserHierarchyInFilters: PropTypes.bool,
     };
 
     static defaultProps = {
@@ -67,6 +68,7 @@ export default class OrgUnitsSelector extends React.Component {
         showShortName: false,
         showNameSetting: false,
         disabled: false,
+        withinUserHierarchyInFilters: false,
     };
 
     static childContextTypes = {
@@ -327,6 +329,7 @@ export default class OrgUnitsSelector extends React.Component {
             selectableIds,
             initiallyExpanded = roots.length > 1 ? [] : roots.map(ou => ou.path),
             disabled,
+            withinUserHierarchyInFilters,
         } = this.props;
         const { filterByLevel, filterByGroup, filterByProgram, selectAll } = controls;
 
@@ -411,6 +414,9 @@ export default class OrgUnitsSelector extends React.Component {
                                                         levels={levels}
                                                         selected={selected}
                                                         currentRoot={currentRoot}
+                                                        withinUserHierarchyInFilters={
+                                                            withinUserHierarchyInFilters
+                                                        }
                                                         onUpdateSelection={
                                                             this.handleSelectionUpdate
                                                         }
@@ -432,6 +438,9 @@ export default class OrgUnitsSelector extends React.Component {
                                                         onItemSelection={this.changeOrgUnitGroup}
                                                         selectableIds={selectableIds}
                                                         selectableLevels={selectableLevels}
+                                                        withinUserHierarchyInFilters={
+                                                            withinUserHierarchyInFilters
+                                                        }
                                                     />
                                                 </div>
                                             )}
