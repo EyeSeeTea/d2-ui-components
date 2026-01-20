@@ -13,19 +13,21 @@ export interface DropdownFormProps {
     label: string;
 }
 
-export const DropdownForm: React.FC<DropdownFormProps> = React.memo(props => {
-    const { className, label, children } = props;
-    const materialTheme = getMaterialTheme();
+export const DropdownForm: React.FC<React.PropsWithChildren<DropdownFormProps>> = React.memo(
+    props => {
+        const { className, label, children } = props;
+        const materialTheme = getMaterialTheme();
 
-    return (
-        <MuiThemeProvider theme={materialTheme}>
-            <FormControl className={className}>
-                <InputLabel>{label}</InputLabel>
-                {children}
-            </FormControl>
-        </MuiThemeProvider>
-    );
-});
+        return (
+            <MuiThemeProvider theme={materialTheme}>
+                <FormControl className={className}>
+                    <InputLabel>{label}</InputLabel>
+                    {children}
+                </FormControl>
+            </MuiThemeProvider>
+        );
+    }
+);
 
 const getMaterialTheme = () =>
     createTheme({
