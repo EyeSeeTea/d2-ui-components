@@ -143,7 +143,7 @@ export default class OrgUnitsSelector extends React.Component {
     }
 
     queryRoots({ search }) {
-        const { api, rootIds, listParams } = this.props;
+        const { api, rootIds, listParams, withinUserHierarchyInFilters } = this.props;
         const baseOptions = {
             fields: {
                 id: true,
@@ -162,6 +162,7 @@ export default class OrgUnitsSelector extends React.Component {
                 paging: true,
                 pageSize: 1000,
                 filter: { displayName: { ilike: search } },
+                ...(withinUserHierarchyInFilters ? { withinUserHierarchy: true } : {}),
             });
         } else if (rootIds) {
             let cancel = false;
