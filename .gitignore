@@ -67,3 +67,6 @@ src/locales
 
 # IntelliJ
 .idea/*
+
+bak
+*.code-workspace
