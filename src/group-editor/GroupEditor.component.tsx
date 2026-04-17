@@ -1,5 +1,4 @@
 import React, { Component } from "react";
-import PropTypes from "prop-types";
 import Button from "@material-ui/core/Button";
 
 import i18n from "../utils/i18n";
@@ -8,8 +7,46 @@ import { Paper, CircularProgress } from "@material-ui/core";
 // TODO: TOAST!
 // TODO: Undo support (in TOAST?)
 
-export default class GroupEditor extends Component {
-    state = {
+interface StoreItem {
+    readonly value: string;
+    readonly text: string;
+}
+
+interface D2Store {
+    state: any;
+    subscribe: (callback: (state: any) => void) => { unsubscribe: () => void };
+    getState?: () => any;
+}
+
+interface GroupEditorProps {
+    readonly itemStore: D2Store;
+    readonly assignedItemStore: D2Store;
+    readonly filterText?: string;
+    readonly onAssignItems: (items: string[]) => Promise<void>;
+    readonly onRemoveItems: (items: string[]) => Promise<void>;
+    readonly onMoveItems?: (items: string[]) => void;
+    readonly height?: number;
+    readonly showOptionsTooltip?: boolean;
+}
+
+interface GroupEditorState {
+    selectedLeft: number;
+    selectedRight: number;
+    loading: boolean;
+}
+
+export default class GroupEditor extends Component<GroupEditorProps, GroupEditorState> {
+    declare context: { d2: any };
+    static contextTypes = { d2: () => null };
+
+    static defaultProps = {
+        height: 500,
+        filterText: "",
+        onMoveItems: () => {},
+        showOptionsTooltip: true,
+    };
+
+    state: GroupEditorState = {
         // Number of items selected in the left/right columns
         selectedLeft: 0,
         selectedRight: 0,
@@ -18,28 +55,30 @@ export default class GroupEditor extends Component {
         loading: true,
     };
 
-    componentDidMount() {
-        this.disposables = [];
+    disposables: Array<{ unsubscribe: () => void }> = [];
+    leftSelect!: HTMLSelectElement;
+    rightSelect!: HTMLSelectElement;
 
+    componentDidMount(): void {
         this.disposables.push(
             this.props.itemStore.subscribe(state => this.setState({ loading: !state }))
         );
         this.disposables.push(this.props.assignedItemStore.subscribe(() => this.forceUpdate()));
     }
 
-    UNSAFE_componentWillReceiveProps(props) {
+    UNSAFE_componentWillReceiveProps(props: GroupEditorProps): void {
         if (props.hasOwnProperty("filterText") && this.leftSelect && this.rightSelect) {
             this.setState({
-                selectedLeft: [].filter.call(
+                selectedLeft: ([] as HTMLOptionElement[]).filter.call(
                     this.leftSelect.selectedOptions,
-                    item =>
+                    (item: HTMLOptionElement) =>
                         item.text
                             .toLowerCase()
                             .indexOf(`${props.filterText}`.trim().toLowerCase()) !== -1
                 ).length,
-                selectedRight: [].filter.call(
+                selectedRight: ([] as HTMLOptionElement[]).filter.call(
                     this.rightSelect.selectedOptions,
-                    item =>
+                    (item: HTMLOptionElement) =>
                         item.text
                             .toLowerCase()
                             .indexOf(`${props.filterText}`.trim().toLowerCase()) !== -1
@@ -48,7 +87,7 @@ export default class GroupEditor extends Component {
         }
     }
 
-    componentWillUnmount() {
+    componentWillUnmount(): void {
         this.disposables.forEach(disposable => {
             disposable.unsubscribe();
         });
@@ -57,10 +96,15 @@ export default class GroupEditor extends Component {
     //
     // Event handlers
     //
-    onAssignItems = () => {
+    onAssignItems = (): void => {
         this.setState({ loading: true });
         this.props
-            .onAssignItems([].map.call(this.leftSelect.selectedOptions, item => item.value))
+            .onAssignItems(
+                ([] as HTMLOptionElement[]).map.call(
+                    this.leftSelect.selectedOptions,
+                    (item: HTMLOptionElement) => item.value
+                ) as string[]
+            )
             .then(() => {
                 this.clearSelection();
                 this.setState({ loading: false });
@@ -70,10 +114,15 @@ export default class GroupEditor extends Component {
             });
     };
 
-    onRemoveItems = () => {
+    onRemoveItems = (): void => {
         this.setState({ loading: true });
         this.props
-            .onRemoveItems([].map.call(this.rightSelect.selectedOptions, item => item.value))
+            .onRemoveItems(
+                ([] as HTMLOptionElement[]).map.call(
+                    this.rightSelect.selectedOptions,
+                    (item: HTMLOptionElement) => item.value
+                ) as string[]
+            )
             .then(() => {
                 this.clearSelection();
                 this.setState({ loading: false });
@@ -83,10 +132,15 @@ export default class GroupEditor extends Component {
             });
     };
 
-    onAssignAll = () => {
+    onAssignAll = (): void => {
         this.setState({ loading: true });
         this.props
-            .onAssignItems([].map.call(this.leftSelect.options, item => item.value))
+            .onAssignItems(
+                ([] as HTMLOptionElement[]).map.call(
+                    this.leftSelect.options,
+                    (item: HTMLOptionElement) => item.value
+                ) as string[]
+            )
             .then(() => {
                 this.clearSelection();
                 this.setState({ loading: false });
@@ -96,10 +150,15 @@ export default class GroupEditor extends Component {
             });
     };
 
-    onRemoveAll = () => {
+    onRemoveAll = (): void => {
         this.setState({ loading: true });
         this.props
-            .onRemoveItems([].map.call(this.rightSelect.options, item => item.value))
+            .onRemoveItems(
+                ([] as HTMLOptionElement[]).map.call(
+                    this.rightSelect.options,
+                    (item: HTMLOptionElement) => item.value
+                ) as string[]
+            )
             .then(() => {
                 this.clearSelection();
                 this.setState({ loading: false });
@@ -112,112 +171,115 @@ export default class GroupEditor extends Component {
     //
     // Data handling utility functions
     //
-    getItemStoreIsCollection() {
+    getItemStoreIsCollection(): boolean {
         return (
             this.props.itemStore.state !== undefined &&
             typeof this.props.itemStore.state.values === "function" &&
             typeof this.props.itemStore.state.has === "function"
         );
     }
-    getItemStoreIsArray() {
+    getItemStoreIsArray(): boolean {
         return (
             this.props.itemStore.state !== undefined &&
             this.props.itemStore.state.constructor.name === "Array"
         );
     }
-    getAssignedItemStoreIsCollection() {
+    getAssignedItemStoreIsCollection(): boolean {
         return (
             this.props.assignedItemStore.state !== undefined &&
             typeof this.props.assignedItemStore.state.values === "function" &&
             typeof this.props.assignedItemStore.state.has === "function"
         );
     }
-    getAssignedItemStoreIsArray() {
+    getAssignedItemStoreIsArray(): boolean {
         return (
             this.props.assignedItemStore.state !== undefined &&
             this.props.assignedItemStore.state.constructor.name === "Array"
         );
     }
-    getAllItems() {
+    getAllItems(): StoreItem[] {
         return this.getItemStoreIsCollection()
-            ? Array.from(this.props.itemStore.state.values()).map(item => ({
+            ? Array.from(this.props.itemStore.state.values()).map((item: any) => ({
                   value: item.id,
                   text: item.name,
               }))
             : this.props.itemStore.state || [];
     }
-    getItemCount() {
+    getItemCount(): number {
         return (
             (this.getItemStoreIsCollection() && this.props.itemStore.state.size) ||
             (this.getItemStoreIsArray() && this.props.itemStore.state.length) ||
             0
         );
     }
-    getIsValueAssigned(value) {
+    getIsValueAssigned(value: string): boolean {
         return this.getAssignedItemStoreIsCollection()
             ? this.props.assignedItemStore.state.has(value)
             : this.props.assignedItemStore.state &&
                   this.props.assignedItemStore.state.indexOf(value) !== -1;
     }
-    getAssignedItems() {
+    getAssignedItems(): StoreItem[] {
         return this.getAllItems().filter(item => this.getIsValueAssigned(item.value));
     }
-    getAvailableItems() {
+    getAvailableItems(): StoreItem[] {
         return this.getAllItems().filter(item => !this.getIsValueAssigned(item.value));
     }
-    getAllItemsFiltered() {
+    getAllItemsFiltered(): StoreItem[] {
         return this.filterItems(this.getAllItems());
     }
-    getAssignedItemsFiltered() {
+    getAssignedItemsFiltered(): StoreItem[] {
         return this.filterItems(this.getAssignedItems());
     }
-    getAvailableItemsFiltered() {
+    getAvailableItemsFiltered(): StoreItem[] {
         return this.filterItems(this.getAvailableItems());
     }
-    getAssignedItemsCount() {
+    getAssignedItemsCount(): number {
         return this.getAssignedItems().length;
     }
-    getAvailableItemsCount() {
+    getAvailableItemsCount(): number {
         return this.getAvailableItems().length;
     }
-    getAssignedItemsFilterCount() {
+    getAssignedItemsFilterCount(): number {
         return this.getFilterText().length === 0
             ? 0
             : this.getAssignedItems().length - this.getAssignedItemsFiltered().length;
     }
-    getAvailableItemsFilterCount() {
+    getAvailableItemsFilterCount(): number {
         return this.getFilterText().length === 0
             ? 0
             : this.getAvailableItems().length - this.getAvailableItemsFiltered().length;
     }
-    getAssignedItemsUnfilteredCount() {
+    getAssignedItemsUnfilteredCount(): number {
         return this.getFilterText().length === 0
             ? this.getAssignedItemsCount()
             : this.getAssignedItemsCount() - this.getAssignedItemsFilterCount();
     }
-    getAvailableItemsUnfilteredCount() {
+    getAvailableItemsUnfilteredCount(): number {
         return this.getFilterText().length === 0
             ? this.getAvailableItemsCount()
             : this.getAvailableItemsCount() - this.getAvailableItemsFilterCount();
     }
-    getFilterText() {
+    getFilterText(): string {
         return this.props.filterText ? this.props.filterText.trim().toLowerCase() : "";
     }
-    getAvailableSelectedCount() {
+    getAvailableSelectedCount(): number {
         return Math.max(this.state.selectedLeft, 0);
     }
-    getAssignedSelectedCount() {
+    getAssignedSelectedCount(): number {
         return Math.max(this.state.selectedRight, 0);
     }
-    getSelectedCount() {
+    getSelectedCount(): number {
         return Math.max(this.getAvailableSelectedCount(), this.getAssignedSelectedCount());
     }
 
-    getSelectedItems() {
-        return [].map.call(this.rightSelect.selectedOptions, item => item.value);
+    getSelectedItems(): string[] {
+        return ([] as HTMLOptionElement[]).map.call(
+            this.rightSelect.selectedOptions,
+            (item: HTMLOptionElement) => item.value
+        ) as string[];
     }
 
-    byAssignedItemsOrder = (left, right) => {
+    byAssignedItemsOrder = (left: StoreItem, right: StoreItem): number => {
         const assignedItemStore = this.props.assignedItemStore.state;
 
         // Don't order anything if the assignedItemStore is not an array
@@ -231,7 +293,7 @@ export default class GroupEditor extends Component {
             : -1;
     };
 
-    clearSelection(left = true, right = true) {
+    clearSelection(left = true, right = true): void {
         if (left) {
             this.leftSelect.selectedIndex = -1;
         }
@@ -246,7 +308,7 @@ export default class GroupEditor extends Component {
         }));
     }
 
-    filterItems(items) {
+    filterItems(items: StoreItem[]): StoreItem[] {
         return items.filter(
             item =>
                 this.getFilterText().length === 0 ||
@@ -257,14 +319,15 @@ export default class GroupEditor extends Component {
     //
     // Rendering
     //
-    render() {
+    render(): React.ReactNode {
         const filterHeight = this.getFilterText().length > 0 ? 15 : 0;
-        const styles = {
+        const height = this.props.height ?? 500;
+        const editorStyles: Record<string, React.CSSProperties> = {
             container: {
                 display: "flex",
                 marginTop: 16,
                 marginBottom: 32,
-                height: `${this.props.height}px`,
+                height: `${height}px`,
             },
             left: {
                 flex: "1 0 120px",
@@ -284,7 +347,7 @@ export default class GroupEditor extends Component {
             select: {
                 width: "100%",
                 minHeight: "50px",
-                height: `${this.props.height - filterHeight}px`,
+                height: `${height - filterHeight}px`,
                 border: "none",
                 fontFamily: "Roboto",
                 fontSize: 13,
@@ -323,43 +386,43 @@ export default class GroupEditor extends Component {
             },
         };
 
-        const onChangeLeft = e => {
+        const onChangeLeft = (e: React.ChangeEvent<HTMLSelectElement>): void => {
             this.clearSelection(false, true);
             this.setState({
                 selectedLeft: e.target.selectedOptions.length,
             });
         };
 
-        const onChangeRight = e => {
+        const onChangeRight = (e: React.ChangeEvent<HTMLSelectElement>): void => {
             this.clearSelection(true, false);
             this.setState({
                 selectedRight: e.target.selectedOptions.length,
             });
         };
 
-        const hiddenLabel = itemCount =>
+        const hiddenLabel = (itemCount: number): string =>
             this.getItemCount() > 0 && this.getFilterText().length > 0
                 ? `${itemCount} ${i18n.t("Hidden by filters")}`
                 : "";
 
-        const selectedLabel = () =>
+        const selectedLabel = (): string =>
             this.getSelectedCount() > 0 ? `${this.getSelectedCount()} ${i18n.t("Selected")}` : "";
 
         const { showOptionsTooltip = true } = this.props;
 
         return (
-            <div style={styles.container}>
-                <div style={styles.left}>
-                    <Paper style={styles.paper}>
-                        <div style={styles.hidden}>
+            <div style={editorStyles.container}>
+                <div style={editorStyles.left}>
+                    <Paper style={editorStyles.paper}>
+                        <div style={editorStyles.hidden}>
                             {hiddenLabel(this.getAvailableItemsFilterCount())}
                         </div>
                         <select
                             multiple
-                            style={styles.select}
+                            style={editorStyles.select}
                             onChange={onChangeLeft}
                             ref={r => {
-                                this.leftSelect = r;
+                                if (r) this.leftSelect = r;
                             }}
                         >
                             {this.getAvailableItemsFiltered().map(item => (
@@ -367,7 +430,7 @@ export default class GroupEditor extends Component {
                                     key={item.value}
                                     value={item.value}
                                     onDoubleClick={this.onAssignItems}
-                                    style={styles.options}
+                                    style={editorStyles.options}
                                     title={showOptionsTooltip ? item.text : undefined}
                                 >
                                     {item.text}
@@ -389,46 +452,46 @@ export default class GroupEditor extends Component {
                             this.getAvailableItemsUnfilteredCount() === 0
                                 ? ""
                                 : this.getAvailableItemsUnfilteredCount()
-                        } →`}
+                        } \u2192`}
                     </Button>
                 </div>
-                <div style={styles.middle}>
-                    <div style={styles.selected}>{selectedLabel()}</div>
+                <div style={editorStyles.middle}>
+                    <div style={editorStyles.selected}>{selectedLabel()}</div>
                     <Button
                         data-test={"group-editor-assign-item"}
                         variant="contained"
                         onClick={this.onAssignItems}
-                        style={styles.buttons}
+                        style={editorStyles.buttons}
                         color="secondary"
                         disabled={this.state.loading || this.state.selectedLeft === 0}
                     >
-                        →
+                        {"\u2192"}
                     </Button>
                     <Button
                         data-test={"group-editor-remove-all"}
                         variant="contained"
                         onClick={this.onRemoveItems}
-                        style={styles.buttons}
+                        style={editorStyles.buttons}
                         color="secondary"
                         disabled={this.state.loading || this.state.selectedRight === 0}
                     >
-                        ←
+                        {"\u2190"}
                     </Button>
-                    <div style={styles.status}>
+                    <div style={editorStyles.status}>
                         {this.state.loading ? <CircularProgress size={30} /> : undefined}
                     </div>
                 </div>
-                <div style={styles.right}>
-                    <Paper style={styles.paper}>
-                        <div style={styles.hidden}>
+                <div style={editorStyles.right}>
+                    <Paper style={editorStyles.paper}>
+                        <div style={editorStyles.hidden}>
                             {hiddenLabel(this.getAssignedItemsFilterCount())}
                         </div>
                         <select
                             multiple
-                            style={styles.select}
+                            style={editorStyles.select}
                             onChange={onChangeRight}
                             ref={r => {
-                                this.rightSelect = r;
+                                if (r) this.rightSelect = r;
                             }}
                         >
                             {this.getAssignedItemsFiltered()
@@ -438,7 +501,7 @@ export default class GroupEditor extends Component {
                                         key={item.value}
                                         value={item.value}
                                         onDoubleClick={this.onRemoveItems}
-                                        style={styles.options}
+                                        style={editorStyles.options}
                                         title={showOptionsTooltip ? item.text : undefined}
                                     >
                                         {item.text}
@@ -467,45 +530,3 @@ export default class GroupEditor extends Component {
         );
     }
 }
-
-GroupEditor.propTypes = {
-    // itemStore: d2-ui store containing all available items, either as a D2 ModelCollection,
-    // or an array on the following format: [{value: 1, text: '1'}, {value: 2, text: '2'}, ...]
-    itemStore: PropTypes.object.isRequired,
-
-    // assignedItemStore: d2-ui store containing all items assigned to the current group, either
-    // as a D2 ModelCollectionProperty or an array of ID's that match values in the itemStore
-    assignedItemStore: PropTypes.object.isRequired,
-
-    // filterText: A string that will be used to filter items in both columns
-    filterText: PropTypes.string,
-
-    // Note: Callbacks should return a promise that will resolve when the operation succeeds
-    // and is rejected when it fails. The component will be in a loading state until the promise
-    // resolves or is rejected.
-
-    // assign items callback, called with an array of values to be assigned to the group
-    onAssignItems: PropTypes.func.isRequired,
-
-    // remove items callback, called with an array of values to be removed from the group
-    onRemoveItems: PropTypes.func.isRequired,
-
-    // remove items callback, called with an array of values to be removed from the group
-    onMoveItems: PropTypes.func,
-
-    // The height of the component, defaults to 500px
-    height: PropTypes.number,
-
-    showOptionsTooltip: PropTypes.bool,
-};
-
-GroupEditor.contextTypes = {
-    d2: PropTypes.object,
-};
-
-GroupEditor.defaultProps = {
-    height: 500,
-    filterText: "",
-    onMoveItems: () => {},
-    showOptionsTooltip: true,
-};

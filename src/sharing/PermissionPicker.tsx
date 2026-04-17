@@ -3,26 +3,42 @@ import Divider from "@material-ui/core/Divider";
 import IconButton from "@material-ui/core/IconButton";
 import MenuList from "@material-ui/core/MenuList";
 import Popover from "@material-ui/core/Popover";
-import { withStyles } from "@material-ui/core/styles";
+import { createStyles, withStyles, WithStyles } from "@material-ui/core/styles";
 import CreateIcon from "@material-ui/icons/Create";
 import NotInterestedIcon from "@material-ui/icons/NotInterested";
 import VisibilityIcon from "@material-ui/icons/Visibility";
-import PropTypes from "prop-types";
 import React, { Component, Fragment } from "react";
 import PermissionOption from "./PermissionOption";
+import { AccessObject } from "./utils";
 
-const styles = {
+const styles = createStyles({
     optionHeader: {
         paddingLeft: 16,
         paddingTop: 16,
-        fontWeight: "500",
+        fontWeight: 500,
         color: "gray",
     },
-};
+});
 
-const AccessIcon = ({ metaAccess, disabled }) => {
+interface AccessPermissionOption {
+    readonly canView: boolean;
+    readonly canEdit: boolean;
+    readonly noAccess: boolean;
+}
+
+export interface AccessOptions {
+    readonly meta: AccessPermissionOption;
+    readonly data?: AccessPermissionOption | false;
+}
+
+interface AccessIconProps {
+    readonly metaAccess: Readonly<{ canView: boolean; canEdit: boolean }>;
+    readonly disabled: boolean;
+}
+
+const AccessIcon: React.FC<AccessIconProps> = ({ metaAccess, disabled }) => {
     const iconProps = {
-        color: disabled ? "disabled" : "action",
+        color: disabled ? ("disabled" as const) : ("action" as const),
     };
     if (metaAccess.canEdit) {
         return <CreateIcon {...iconProps} />;
@@ -35,13 +51,30 @@ const AccessIcon = ({ metaAccess, disabled }) => {
     );
 };
 
-class PermissionPicker extends Component {
-    state = {
-        open: false,
+interface PermissionPickerProps {
+    readonly access: AccessObject;
+    readonly accessOptions: AccessOptions;
+    readonly onChange: (access: AccessObject) => void;
+    readonly disabled?: boolean;
+}
+
+interface PermissionPickerState {
+    readonly open: boolean;
+    readonly anchor: HTMLElement | null;
+}
+
+class PermissionPicker extends Component<PermissionPickerProps, PermissionPickerState> {
+    static defaultProps = {
+        disabled: false,
     };
 
-    onOptionClick = access => () => {
-        const newAccess = {
+    state: PermissionPickerState = {
+        open: false,
+        anchor: null,
+    };
+
+    onOptionClick = (access: Partial<AccessObject>) => () => {
+        const newAccess: AccessObject = {
             ...this.props.access,
             ...access,
         };
@@ -49,7 +82,7 @@ class PermissionPicker extends Component {
         this.props.onChange(newAccess);
     };
 
-    openMenu = event => {
+    openMenu = (event: React.MouseEvent<HTMLElement>) => {
         event.preventDefault();
         this.setState({
             open: true,
@@ -70,7 +103,7 @@ class PermissionPicker extends Component {
         return (
             <Fragment>
                 <IconButton onClick={this.openMenu} disabled={this.props.disabled}>
-                    <AccessIcon metaAccess={meta} disabled={this.props.disabled} />
+                    <AccessIcon metaAccess={meta} disabled={this.props.disabled ?? false} />
                 </IconButton>
                 <Popover
                     open={this.state.open}
@@ -144,23 +177,14 @@ class PermissionPicker extends Component {
     };
 }
 
-PermissionPicker.propTypes = {
-    access: PropTypes.object.isRequired,
-    accessOptions: PropTypes.object.isRequired,
-    onChange: PropTypes.func.isRequired,
-    disabled: PropTypes.bool,
-};
+interface OptionHeaderOwnProps {
+    readonly text: string;
+}
 
-PermissionPicker.defaultProps = {
-    disabled: false,
-};
+type OptionHeaderProps = OptionHeaderOwnProps & WithStyles<typeof styles>;
 
-const OptionHeader = withStyles(styles)(({ text, classes }) => (
+const OptionHeader = withStyles(styles)(({ text, classes }: OptionHeaderProps) => (
     <div className={classes.optionHeader}>{text.toUpperCase()}</div>
 ));
-
-OptionHeader.propTypes = {
-    text: PropTypes.string.isRequired,
-};
 
 export default PermissionPicker;

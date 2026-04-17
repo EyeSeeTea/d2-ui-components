@@ -4,6 +4,42 @@ import _ from "lodash";
 import React from "react";
 import i18n from "../utils/i18n";
 
+export interface OrgUnit {
+    readonly id: string;
+    readonly path: string;
+}
+
+export interface OrgUnitSelectProps {
+    readonly selectableIds?: ReadonlyArray<string>;
+    readonly selected: ReadonlyArray<string>;
+    readonly onUpdateSelection: (selection: ReadonlyArray<string>) => void;
+    readonly onItemSelection: (value: string | number) => void;
+}
+
+export interface OrgUnitSelectState {
+    loading: boolean;
+    selection: string | number | undefined;
+}
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
+export interface OrgUnitSelectBaseComponent {
+    props: OrgUnitSelectProps;
+    state: OrgUnitSelectState;
+    setState: (state: any, callback?: () => void) => void;
+}
+
+export interface OrgUnitSelectComponent extends OrgUnitSelectBaseComponent {
+    handleChangeSelection: (event: React.ChangeEvent<{ value: unknown }>) => void;
+    handleSelect: () => void;
+    handleDeselect: () => void;
+}
+/* eslint-enable @typescript-eslint/no-explicit-any */
+
+interface DropdownMenuItem {
+    readonly id: string | number;
+    readonly displayName: string;
+}
+
 const style = {
     button: {
         margin: 5,
@@ -19,7 +55,7 @@ const style = {
     },
 };
 
-function addToSelection(orgUnits) {
+function addToSelection(this: OrgUnitSelectBaseComponent, orgUnits: ReadonlyArray<OrgUnit>): void {
     const { selectableIds, selected } = this.props;
     const additions = orgUnits.filter(({ id }) => !selectableIds || selectableIds.includes(id));
     const newSelection = _.uniq([...selected, ...additions.map(ou => ou.path)]);
@@ -27,7 +63,10 @@ function addToSelection(orgUnits) {
     this.props.onUpdateSelection(newSelection);
 }
 
-function removeFromSelection(orgUnits) {
+function removeFromSelection(
+    this: OrgUnitSelectBaseComponent,
+    orgUnits: ReadonlyArray<OrgUnit>
+): void {
     const removedOus = orgUnits.filter(ou => this.props.selected.includes(ou.path));
     const removed = removedOus.map(ou => ou.path);
     const selectedOus = this.props.selected.filter(ou => !removed.includes(ou));
@@ -35,12 +74,19 @@ function removeFromSelection(orgUnits) {
     this.props.onUpdateSelection(selectedOus);
 }
 
-function handleChangeSelection(event) {
-    this.setState({ selection: event.target.value });
-    this.props.onItemSelection(event.target.value);
+function handleChangeSelection(
+    this: OrgUnitSelectComponent,
+    event: React.ChangeEvent<{ value: unknown }>
+): void {
+    this.setState({ selection: event.target.value as string | number });
+    this.props.onItemSelection(event.target.value as string | number);
 }
 
-function renderDropdown(menuItems, label) {
+function renderDropdown(
+    this: OrgUnitSelectComponent,
+    menuItems: ReadonlyArray<DropdownMenuItem>,
+    label: string
+): React.ReactElement {
     const disabled = this.state.loading || !this.state.selection;
 
     return (
@@ -63,7 +109,7 @@ function renderDropdown(menuItems, label) {
             </FormControl>
 
             <div style={{ marginLeft: 10, marginTop: 24, display: "inline-block" }}>
-                {this.state.loading && <LinearProgress size={0.5} style={style.progress} />}
+                {this.state.loading && <LinearProgress style={style.progress} />}
                 <Button
                     variant="contained"
                     style={style.button}

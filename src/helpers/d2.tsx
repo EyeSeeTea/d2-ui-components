@@ -3,13 +3,29 @@ import _ from "lodash";
 import { formatDateLong } from "../utils/date";
 import i18n from "../utils/i18n";
 
-const textByAccess = {
+interface CollectionItem {
+    displayName?: string;
+    name?: string;
+    id?: string;
+}
+
+interface D2ModelValidation {
+    type?: string;
+    min?: number;
+    max?: number;
+}
+
+interface D2Model {
+    modelValidations: Record<string, D2ModelValidation>;
+}
+
+const textByAccess: Record<string, string> = {
     rw: i18n.t("R/W"),
     "r-": i18n.t("Read"),
     "--": i18n.t("Private"),
 };
 
-function getValueForAccess(value) {
+function getValueForAccess(value: string): string {
     const metadataAccess = value.slice(0, 2);
     const dataAccess = value.slice(2, 4);
 
@@ -20,7 +36,7 @@ function getValueForAccess(value) {
     ].join("");
 }
 
-function getValueForCollection(values) {
+function getValueForCollection(values: ReadonlyArray<CollectionItem>): React.ReactElement {
     const namesToDisplay = _(values)
         .map(value => value.displayName || value.name || value.id)
         .compact()
@@ -36,10 +52,10 @@ function getValueForCollection(values) {
 }
 
 const styles = {
-    url: { wordBreak: "break-all" },
+    url: { wordBreak: "break-all" as const },
 };
 
-function getValueForUrl(value) {
+function getValueForUrl(value: string): React.ReactElement {
     return (
         <a rel="noopener noreferrer" style={styles.url} href={value} target="_blank">
             {value}
@@ -47,7 +63,10 @@ function getValueForUrl(value) {
     );
 }
 
-export function getFormatter(model, name) {
+export function getFormatter(
+    model: D2Model | undefined,
+    name: string
+): (obj: Record<string, unknown>) => unknown {
     if (!model) return obj => obj[name];
 
     const def = model.modelValidations[name] || {};
@@ -65,5 +84,5 @@ export function getFormatter(model, name) {
         }
     })();
 
-    return obj => (obj[name] && fn ? fn(obj[name]) : obj[name]);
+    return obj => (obj[name] && fn ? (fn as (v: any) => unknown)(obj[name]) : obj[name]);
 }

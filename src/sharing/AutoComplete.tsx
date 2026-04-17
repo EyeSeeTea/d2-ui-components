@@ -1,7 +1,6 @@
 import React, { Component } from "react";
-import PropTypes from "prop-types";
 import Downshift from "downshift";
-import { withStyles } from "@material-ui/core/styles";
+import { withStyles, WithStyles } from "@material-ui/core/styles";
 import TextField from "@material-ui/core/TextField";
 import Paper from "@material-ui/core/Paper";
 import MenuItem from "@material-ui/core/MenuItem";
@@ -9,21 +8,44 @@ import Popper from "@material-ui/core/Popper";
 import PersonIcon from "@material-ui/icons/Person";
 import GroupIcon from "@material-ui/icons/Group";
 
-const Input = ({ InputProps }) => {
+interface SuggestionItem {
+    readonly id: string;
+    readonly displayName: string;
+    readonly type: string;
+}
+
+interface SelectedItem {
+    readonly id: string;
+    readonly name: string;
+}
+
+interface InputComponentProps {
+    readonly InputProps: object;
+}
+
+const Input: React.FC<InputComponentProps> = ({ InputProps }) => {
     return <TextField id="user-search-input" fullWidth InputProps={{ ...InputProps }} />;
 };
 
-Input.propTypes = {
-    InputProps: PropTypes.object.isRequired,
-};
+interface SuggestionProps {
+    readonly suggestion: SuggestionItem;
+    readonly itemProps: Record<string, unknown>;
+    readonly isHighlighted: boolean;
+    readonly selectedItem: SelectedItem | null;
+}
 
-const Suggestion = ({ suggestion, itemProps, isHighlighted, selectedItem }) => {
-    const isSelected = selectedItem && selectedItem.id === suggestion.id;
+const Suggestion: React.FC<SuggestionProps> = ({
+    suggestion,
+    itemProps,
+    isHighlighted,
+    selectedItem,
+}) => {
+    const isSelected = selectedItem !== null && selectedItem.id === suggestion.id;
 
     return (
         <MenuItem
             {...itemProps}
-            key={suggestion.label}
+            key={suggestion.displayName}
             selected={isHighlighted}
             component="div"
             style={{
@@ -38,13 +60,6 @@ const Suggestion = ({ suggestion, itemProps, isHighlighted, selectedItem }) => {
     );
 };
 
-Suggestion.propTypes = {
-    isHighlighted: PropTypes.bool.isRequired,
-    itemProps: PropTypes.object,
-    selectedItem: PropTypes.object,
-    suggestion: PropTypes.shape({ displayName: PropTypes.string }).isRequired,
-};
-
 const styles = () => ({
     root: {
         flexGrow: 1,
@@ -53,21 +68,35 @@ const styles = () => ({
     popper: {
         zIndex: 2000,
         maxHeight: "420px",
-        overflowY: "hidden",
+        overflowY: "hidden" as const,
         boxShadow: "0px 0px 1px 1px rgba(0,0,0,0.2)",
     },
     container: {
         flexGrow: 1,
-        position: "relative",
+        position: "relative" as const,
     },
     inputRoot: {
-        flexWrap: "wrap",
+        flexWrap: "wrap" as const,
     },
 });
 
-let popperNode;
+let popperNode: HTMLElement | null = null;
 
-class AutoComplete extends Component {
+interface AutoCompleteOwnProps {
+    readonly placeholderText?: string;
+    readonly onInputChanged: (value: string) => void;
+    readonly onItemSelected: (item: SelectedItem | null) => void;
+    readonly suggestions: ReadonlyArray<SuggestionItem>;
+    readonly searchText: string;
+}
+
+type AutoCompleteProps = AutoCompleteOwnProps & WithStyles<typeof styles>;
+
+class AutoComplete extends Component<AutoCompleteProps> {
+    static defaultProps = {
+        placeholderText: "",
+    };
+
     render() {
         const { classes, placeholderText, suggestions, searchText } = this.props;
 
@@ -77,7 +106,7 @@ class AutoComplete extends Component {
                     id="user-autocomplete"
                     onInputValueChange={this.props.onInputChanged}
                     onChange={this.props.onItemSelected}
-                    itemToString={item => (item ? item.name : "")}
+                    itemToString={(item: SelectedItem | null) => (item ? item.name : "")}
                     inputValue={searchText}
                 >
                     {({
@@ -91,11 +120,9 @@ class AutoComplete extends Component {
                         return (
                             <div className={classes.container}>
                                 <Input
-                                    fullWidth
-                                    classes={classes}
                                     InputProps={getInputProps({
                                         placeholder: placeholderText,
-                                        inputRef: node => {
+                                        inputRef: (node: HTMLElement | null) => {
                                             popperNode = node;
                                         },
                                     })}
@@ -113,7 +140,7 @@ class AutoComplete extends Component {
                                                 style={{
                                                     width: popperNode
                                                         ? popperNode.clientWidth
-                                                        : null,
+                                                        : undefined,
                                                 }}
                                             >
                                                 {suggestions.map((suggestion, index) => {
@@ -130,7 +157,9 @@ class AutoComplete extends Component {
                                                             isHighlighted={
                                                                 highlightedIndex === index
                                                             }
-                                                            selectedItem={selectedItem}
+                                                            selectedItem={
+                                                                selectedItem as SelectedItem | null
+                                                            }
                                                         />
                                                     );
                                                 })}
@@ -146,17 +175,5 @@ class AutoComplete extends Component {
         );
     }
 }
-
-AutoComplete.propTypes = {
-    classes: PropTypes.object.isRequired,
-    placeholderText: PropTypes.string,
-    onInputChanged: PropTypes.func.isRequired,
-    onItemSelected: PropTypes.func.isRequired,
-    suggestions: PropTypes.array.isRequired,
-};
-
-AutoComplete.defaultProps = {
-    placeholderText: "",
-};
 
 export default withStyles(styles)(AutoComplete);

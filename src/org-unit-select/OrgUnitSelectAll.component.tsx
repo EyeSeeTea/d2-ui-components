@@ -1,13 +1,18 @@
 import React from "react";
-import PropTypes from "prop-types";
 import log from "loglevel";
 import Button from "@material-ui/core/Button";
 import i18n from "../utils/i18n";
 
-import { addToSelection, removeFromSelection } from "./common";
+import {
+    OrgUnit,
+    OrgUnitSelectBaseComponent,
+    OrgUnitSelectProps,
+    addToSelection,
+    removeFromSelection,
+} from "./common";
 import { isSelectableLevelsDefined } from "./OrgUnitSelectByGroup.component";
 
-const style = {
+const style: Record<string, React.CSSProperties> = {
     button: {
         position: "relative",
         top: 3,
@@ -18,11 +23,45 @@ const style = {
         backgroundColor: "rgba(0,0,0,0)",
         top: 46,
     },
+    button1: {
+        position: "relative",
+        top: 3,
+        marginLeft: 0,
+    },
 };
-style.button1 = Object.assign({}, style.button, { marginLeft: 0 });
 
-class OrgUnitSelectAll extends React.Component {
-    constructor(props, context) {
+interface SelectedFilters {
+    readonly level?: number | null;
+    readonly orgUnitGroupId?: string | null;
+    readonly programId?: string | null;
+}
+
+interface OrgUnitSelectAllProps extends Omit<OrgUnitSelectProps, "onItemSelection"> {
+    readonly currentRoot?: {
+        readonly id: string;
+        readonly displayName: string;
+        readonly path: string;
+        readonly level?: number;
+    };
+    readonly selectedFilters?: SelectedFilters;
+    readonly selectableLevels?: ReadonlyArray<number>;
+}
+
+interface OrgUnitSelectAllState {
+    loading: boolean;
+    cache: string[] | null;
+}
+
+class OrgUnitSelectAll extends React.Component<OrgUnitSelectAllProps, OrgUnitSelectAllState> {
+    declare context: { api: any };
+    static contextTypes = { api: () => null };
+
+    cacheByFilters: Record<string, OrgUnit[]> = {};
+
+    addToSelection: (orgUnits: ReadonlyArray<OrgUnit>) => void;
+    removeFromSelection: (orgUnits: ReadonlyArray<OrgUnit>) => void;
+
+    constructor(props: OrgUnitSelectAllProps, context: { api: any }) {
         super(props, context);
 
         this.state = {
@@ -30,10 +69,10 @@ class OrgUnitSelectAll extends React.Component {
             cache: null,
         };
 
-        this.cacheByFilters = {};
-
-        this.addToSelection = addToSelection.bind(this);
-        this.removeFromSelection = removeFromSelection.bind(this);
+        this.addToSelection = addToSelection.bind((this as unknown) as OrgUnitSelectBaseComponent);
+        this.removeFromSelection = removeFromSelection.bind(
+            (this as unknown) as OrgUnitSelectBaseComponent
+        );
 
         this.handleSelectAll = this.handleSelectAll.bind(this);
         this.handleDeselectAll = this.handleDeselectAll.bind(this);
@@ -41,7 +80,7 @@ class OrgUnitSelectAll extends React.Component {
         this.getOrgUnitsByFilters = this.getOrgUnitsByFilters.bind(this);
     }
 
-    handleSelectAll() {
+    handleSelectAll(): void {
         if (this.props.currentRoot) {
             this.setState({ loading: true });
             this.getDescendantOrgUnits().then(orgUnits => {
@@ -60,33 +99,39 @@ class OrgUnitSelectAll extends React.Component {
             this.context.api.models.organisationUnits
                 .get({ fields: { id: true, path: true }, paging: false, filter: filters })
                 .getData()
-                .then(({ objects }) => {
+                .then(({ objects }: { objects: OrgUnit[] }) => {
                     this.addToSelection(objects);
                     this.setState({
                         cache: objects.map(ou => ou.path),
                         loading: false,
                     });
                 })
-                .catch(err => {
+                .catch((err: Error) => {
                     this.setState({ loading: false });
                     log.error("Failed to load all org units:", err);
                 });
         }
     }
 
-    getRelativeLevelFilter(api, level, currentRoot) {
+    getRelativeLevelFilter(
+        _api: any,
+        level: number,
+        currentRoot: OrgUnitSelectAllProps["currentRoot"]
+    ): number | undefined {
         if (!currentRoot) return undefined;
 
         const rootLevel =
             currentRoot.level || currentRoot.path
-                ? this.props.currentRoot.path.match(/\//g).length
+                ? this.props.currentRoot!.path.match(/\//g)!.length
                 : NaN;
         return level - rootLevel;
     }
 
-    getOrgUnitsByFilters() {
+    getOrgUnitsByFilters(): void {
         const { api } = this.context;
         const { selectedFilters, currentRoot } = this.props;
+
+        if (!selectedFilters) return;
 
         const cacheKey = `${selectedFilters.level}-${selectedFilters.orgUnitGroupId}-${selectedFilters.programId}`;
 
@@ -110,7 +155,7 @@ class OrgUnitSelectAll extends React.Component {
                 ? this.getRelativeLevelFilter(api, level, currentRoot)
                 : level;
 
-            if (isNaN(relativeLevel) || relativeLevel < 0) {
+            if (relativeLevel !== undefined && (isNaN(relativeLevel) || relativeLevel < 0)) {
                 log.info(
                     "Unable to select org unit levels higher up in the hierarchy than the current root"
                 );
@@ -125,8 +170,10 @@ class OrgUnitSelectAll extends React.Component {
                 filter: filtersbyGroupAndProgram.length > 0 ? filtersbyGroupAndProgram : undefined,
             })
                 .getData()
-                .then(({ organisationUnits }) => organisationUnits)
-                .then(orgUnitArray => {
+                .then(
+                    ({ organisationUnits }: { organisationUnits: OrgUnit[] }) => organisationUnits
+                )
+                .then((orgUnitArray: OrgUnit[]) => {
                     log.debug(
                         `Loaded ${orgUnitArray.length} org units by filters ${selectedFilters} within ${currentRoot.displayName}`
                     );
@@ -134,7 +181,7 @@ class OrgUnitSelectAll extends React.Component {
                     this.addToSelection(orgUnitArray);
                 });
         } else if (this.cacheByFilters.hasOwnProperty(cacheKey)) {
-            this.addToSelection(this.cacheByFilters[cacheKey].slice());
+            this.addToSelection(this.cacheByFilters[cacheKey]!.slice());
             this.setState({ loading: false });
         } else {
             log.debug(`Loading org units for level ${level}`);
@@ -148,8 +195,10 @@ class OrgUnitSelectAll extends React.Component {
                 filter: filtersbyGroupAndProgram.length > 0 ? filtersbyGroupAndProgram : undefined,
             })
                 .getData()
-                .then(({ organisationUnits }) => organisationUnits)
-                .then(orgUnitArray => {
+                .then(
+                    ({ organisationUnits }: { organisationUnits: OrgUnit[] }) => organisationUnits
+                )
+                .then((orgUnitArray: OrgUnit[]) => {
                     log.debug(
                         `Loaded ${orgUnitArray.length} org units by filters ${selectedFilters}`
                     );
@@ -160,25 +209,25 @@ class OrgUnitSelectAll extends React.Component {
                     // Make a copy of the returned array to ensure that the cache won't be modified from elsewhere
                     this.addToSelection(orgUnitArray.slice());
                 })
-                .catch(err => {
+                .catch((err: Error) => {
                     this.setState({ loading: false });
                     log.error(`Failed to load org units by filters ${selectedFilters}:`, err);
                 });
         }
     }
 
-    getDescendantOrgUnits() {
+    getDescendantOrgUnits(): Promise<OrgUnit[]> {
         return this.context.api
-            .get("/organisationUnits/" + this.props.currentRoot.id, {
+            .get("/organisationUnits/" + this.props.currentRoot!.id, {
                 paging: false,
                 includeDescendants: true,
                 fields: "id,path",
             })
             .getData()
-            .then(({ organisationUnits }) => organisationUnits);
+            .then(({ organisationUnits }: { organisationUnits: OrgUnit[] }) => organisationUnits);
     }
 
-    handleDeselectAll() {
+    handleDeselectAll(): void {
         if (this.props.currentRoot) {
             this.setState({ loading: true });
             this.getDescendantOrgUnits().then(orgUnits => {
@@ -190,13 +239,15 @@ class OrgUnitSelectAll extends React.Component {
         }
     }
 
-    selectedFiltersCount() {
-        return Object.keys(this.props.selectedFilters).filter(key => {
-            return this.props.selectedFilters[key];
+    selectedFiltersCount(): number {
+        if (!this.props.selectedFilters) return 0;
+        const filters = this.props.selectedFilters;
+        return Object.keys(filters).filter(key => {
+            return filters[key as keyof SelectedFilters];
         }).length;
     }
 
-    render() {
+    render(): React.ReactNode {
         return (
             <div>
                 <Button
@@ -231,27 +282,5 @@ class OrgUnitSelectAll extends React.Component {
         );
     }
 }
-
-OrgUnitSelectAll.propTypes = {
-    // selected is an array of selected organisation unit IDs
-    selected: PropTypes.array.isRequired,
-
-    // Whenever the selection changes, onUpdateSelection will be called with
-    // one argument: The new array of selected organisation unit paths
-    onUpdateSelection: PropTypes.func.isRequired,
-
-    // If currentRoot is set, only org units that are descendants of the
-    // current root org unit will be added to or removed from the selection
-    currentRoot: PropTypes.object,
-
-    // selected filters values: level, orgUnitGroupId, programId
-    selectedFilters: PropTypes.shape({
-        level: PropTypes.number,
-        orgUnitGroupId: PropTypes.string,
-        programId: PropTypes.string,
-    }),
-};
-
-OrgUnitSelectAll.contextTypes = { api: PropTypes.object.isRequired };
 
 export default OrgUnitSelectAll;

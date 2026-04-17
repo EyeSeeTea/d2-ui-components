@@ -29,9 +29,9 @@
         "@babel/preset-typescript": "7.12.7",
         "@dhis2/d2-i18n-extract": "1.0.8",
         "@dhis2/d2-i18n-generate": "1.2.0",
-        "@material-ui/core": "4.12.3",
+        "@material-ui/core": "4.11.4",
+        "@material-ui/styles": "4.11.5",
         "@material-ui/icons": "4.9.1",
-        "@material-ui/styles": "4.11.4",
         "@types/classnames": "2.2.11",
         "@types/enzyme": "3.10.8",
         "@types/jest": "26.0.20",
@@ -81,6 +81,9 @@
         "nano-memoize": "1.2.1",
         "react-linkify": "1.0.0-alpha",
         "throttle-debounce": "2.1.0"
+    },
+    "resolutions": {
+        "@material-ui/styles": "4.11.5"
     },
     "scripts": {
         "build-base": "mkdir -p build && cp README.md LICENSE build/ && yarn build-css && yarn localize && yarn build-locales && cp package.json build/ && yarn build-babel && yarn build-tsc",

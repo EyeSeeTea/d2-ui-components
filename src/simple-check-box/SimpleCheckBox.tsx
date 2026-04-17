@@ -1,8 +1,12 @@
 import React from "react";
-import PropTypes from "prop-types";
 import "./SimpleCheckBox.css";
 
-export default function SimpleCheckBox(props) {
+interface SimpleCheckBoxProps {
+    readonly onClick: () => void;
+    readonly checked: boolean;
+}
+
+export default function SimpleCheckBox(props: SimpleCheckBoxProps): React.ReactElement {
     const { onClick, checked } = props;
 
     return (
@@ -12,8 +16,3 @@ export default function SimpleCheckBox(props) {
         </span>
     );
 }
-
-SimpleCheckBox.propTypes = {
-    onClick: PropTypes.func.isRequired,
-    checked: PropTypes.bool.isRequired,
-};

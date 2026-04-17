@@ -1,16 +1,16 @@
 import React, { Component } from "react";
-import PropTypes from "prop-types";
-import { withStyles } from "@material-ui/core/styles";
+import { createStyles, withStyles, WithStyles } from "@material-ui/core/styles";
 import debounce from "lodash/debounce";
 import i18n from "../utils/i18n";
 
-import { accessObjectToString } from "./utils";
+import { AccessObject, accessObjectToString } from "./utils";
 import PermissionPicker from "./PermissionPicker";
 import AutoComplete from "./AutoComplete";
+import { SearchResult } from "./types";
 
-const styles = {
+const styles = createStyles({
     container: {
-        fontWeight: "400",
+        fontWeight: 400,
         padding: 16,
         backgroundColor: "#F5F5F5",
         display: "flex",
@@ -28,17 +28,48 @@ const styles = {
         color: "#818181",
         paddingBottom: 8,
     },
-};
+});
+
+interface SearchResultItem {
+    readonly id: string;
+    readonly displayName: string;
+    readonly type: string;
+}
+
+interface SharingRuleInput {
+    readonly id: string;
+    readonly displayName: string;
+    readonly access: string;
+}
+
+interface UserSearchOwnProps {
+    readonly onSearch: (searchText: string) => Promise<SearchResult>;
+    readonly addUserAccess: (access: SharingRuleInput) => void;
+    readonly addUserGroupAccess: (access: SharingRuleInput) => void;
+    readonly dataShareable: boolean;
+    readonly currentAccessIds: ReadonlyArray<string>;
+    readonly showPermissionPicker: boolean;
+}
+
+type UserSearchProps = UserSearchOwnProps & WithStyles<typeof styles>;
+
+interface UserSearchState {
+    readonly defaultAccess: AccessObject;
+    readonly searchResult: ReadonlyArray<SearchResultItem>;
+    readonly searchText: string;
+}
 
 const searchDelay = 300;
 
-class UserSearch extends Component {
-    constructor(props) {
+class UserSearch extends Component<UserSearchProps, UserSearchState> {
+    private readonly debouncedFetch: ReturnType<typeof debounce>;
+
+    constructor(props: UserSearchProps) {
         super(props);
         this.debouncedFetch = debounce(this.fetchSearchResult, searchDelay);
     }
 
-    state = {
+    state: UserSearchState = {
         defaultAccess: {
             meta: { canView: true, canEdit: true },
             data: { canView: false, canEdit: false },
@@ -51,35 +82,44 @@ class UserSearch extends Component {
         this.debouncedFetch.cancel();
     }
 
-    onItemSelected = selected => {
+    onItemSelected = (selected: { id: string; name: string } | null) => {
+        if (!selected) return;
+
         this.debouncedFetch("");
         const selection = this.state.searchResult.find(r => r.id === selected.id);
 
-        const type = selection.type;
-        delete selection.type;
+        if (!selection) return;
 
-        if (type === "userAccess") {
-            this.props.addUserAccess({
-                ...selection,
-                access: accessObjectToString(this.state.defaultAccess),
-            });
+        const accessString = accessObjectToString(this.state.defaultAccess);
+        const sharingRule: SharingRuleInput = {
+            id: selection.id,
+            displayName: selection.displayName,
+            access: accessString,
+        };
+
+        if (selection.type === "userAccess") {
+            this.props.addUserAccess(sharingRule);
         } else {
-            this.props.addUserGroupAccess({
-                ...selection,
-                access: accessObjectToString(this.state.defaultAccess),
-            });
+            this.props.addUserGroupAccess(sharingRule);
         }
         this.clearSearchText();
     };
 
-    hasNoCurrentAccess = userOrGroup => this.props.currentAccessIds.indexOf(userOrGroup.id) === -1;
+    hasNoCurrentAccess = (userOrGroup: { id: string }): boolean =>
+        this.props.currentAccessIds.indexOf(userOrGroup.id) === -1;
 
-    fetchSearchResult = searchText => {
+    fetchSearchResult = (searchText: string) => {
         if (searchText === "") {
             this.handleSearchResult([]);
         } else {
             this.props.onSearch(searchText).then(({ users, userGroups }) => {
-                const addType = type => result => ({ ...result, type });
+                const addType = (type: string) => (result: {
+                    id: string;
+                    displayName: string;
+                }): SearchResultItem => ({
+                    ...result,
+                    type,
+                });
                 const searchResult = users
                     .map(addType("userAccess"))
                     .filter(this.hasNoCurrentAccess)
@@ -92,16 +132,16 @@ class UserSearch extends Component {
         }
     };
 
-    handleSearchResult = searchResult => {
+    handleSearchResult = (searchResult: ReadonlyArray<SearchResultItem>) => {
         this.setState({ searchResult });
     };
 
-    onInputChanged = searchText => {
+    onInputChanged = (searchText: string) => {
         this.debouncedFetch(searchText);
         this.setState({ searchText });
     };
 
-    accessOptionsChanged = accessOptions => {
+    accessOptionsChanged = (accessOptions: AccessObject) => {
         this.setState({
             defaultAccess: accessOptions,
         });
@@ -120,12 +160,11 @@ class UserSearch extends Component {
                 <div className={classes.title}>{i18n.t("Add users and user groups")}</div>
                 <div className={classes.innerContainer}>
                     <AutoComplete
-                        suggestions={this.state.searchResult}
+                        suggestions={this.state.searchResult as ReadonlyArray<SearchResultItem>}
                         placeholderText={i18n.t("Enter names")}
                         onItemSelected={this.onItemSelected}
                         onInputChanged={this.onInputChanged}
                         searchText={this.state.searchText}
-                        classes={{}}
                     />
                     {showPermissionPicker && (
                         <PermissionPicker
@@ -150,14 +189,5 @@ class UserSearch extends Component {
         );
     }
 }
-
-UserSearch.propTypes = {
-    onSearch: PropTypes.func.isRequired,
-    addUserAccess: PropTypes.func.isRequired,
-    dataShareable: PropTypes.bool.isRequired,
-    addUserGroupAccess: PropTypes.func.isRequired,
-    currentAccessIds: PropTypes.array.isRequired,
-    showPermissionPicker: PropTypes.bool.isRequired,
-};
 
 export default withStyles(styles)(UserSearch);

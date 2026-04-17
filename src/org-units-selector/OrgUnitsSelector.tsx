@@ -1,6 +1,5 @@
 import { Card, CardContent, FormControlLabel, Switch } from "@material-ui/core";
 import _ from "lodash";
-import PropTypes from "prop-types";
 import React from "react";
 import {
     OrgUnitSelectAll,
@@ -9,46 +8,87 @@ import {
     OrgUnitSelectByProgram,
 } from "../org-unit-select";
 import { decrementMemberCount, incrementMemberCount, OrgUnitTree } from "../org-unit-tree";
+import type { OrgUnitNode } from "../org-unit-tree/utils";
 import SearchBox from "../search-box/SearchBox";
 import i18n from "../utils/i18n";
 import { promiseMap } from "../utils/promiseMap";
 
 // Base code taken from d2-ui/examples/create-react-app/src/components/org-unit-selector.js
 
-export default class OrgUnitsSelector extends React.Component {
-    static propTypes = {
-        api: PropTypes.object.isRequired,
-        onChange: PropTypes.func.isRequired,
-        selected: PropTypes.arrayOf(PropTypes.string).isRequired,
-        initiallyExpanded: PropTypes.arrayOf(PropTypes.string),
-        levels: PropTypes.arrayOf(PropTypes.number),
-        rootIds: PropTypes.arrayOf(PropTypes.string),
-        listParams: PropTypes.object,
-        labelChildren: PropTypes.func,
-        controls: PropTypes.shape({
-            filterByLevel: PropTypes.bool,
-            filterByGroup: PropTypes.bool,
-            filterByProgram: PropTypes.bool,
-            selectAll: PropTypes.bool,
-        }),
-        withElevation: PropTypes.bool,
-        height: PropTypes.number,
-        hideCheckboxes: PropTypes.bool,
-        fullWidth: PropTypes.bool,
-        square: PropTypes.bool,
-        singleSelection: PropTypes.bool,
-        selectableIds: PropTypes.arrayOf(PropTypes.string),
-        showShortName: PropTypes.bool,
-        showNameSetting: PropTypes.bool,
-        onUseShortNamesChange: PropTypes.func,
-        onChildrenLoaded: PropTypes.shape({
-            fields: PropTypes.arrayOf(PropTypes.string),
-            fn: PropTypes.func,
-        }),
-        disabled: PropTypes.bool,
-        withinUserHierarchyInFilters: PropTypes.bool,
-    };
+interface Controls {
+    readonly filterByLevel?: boolean;
+    readonly filterByGroup?: boolean;
+    readonly filterByProgram?: boolean;
+    readonly selectAll?: boolean;
+}
 
+interface ChildrenLoadedConfig {
+    readonly fields: ReadonlyArray<string>;
+    readonly fn: (children: any[]) => void;
+}
+
+interface OrgUnitsSelectorProps {
+    readonly api: any;
+    readonly onChange: (selection: string[]) => void;
+    readonly selected: ReadonlyArray<string>;
+    readonly initiallyExpanded?: ReadonlyArray<string>;
+    readonly levels?: ReadonlyArray<number> | null;
+    readonly rootIds?: ReadonlyArray<string>;
+    readonly listParams?: Record<string, any>;
+    readonly labelChildren?: ((orgUnit: any) => React.ReactNode) | null;
+    readonly controls?: Controls;
+    readonly withElevation?: boolean;
+    readonly height?: number;
+    readonly hideCheckboxes?: boolean;
+    readonly fullWidth?: boolean;
+    readonly square?: boolean;
+    readonly singleSelection?: boolean;
+    readonly selectableIds?: ReadonlyArray<string>;
+    readonly showShortName?: boolean;
+    readonly showNameSetting?: boolean;
+    readonly onUseShortNamesChange?: (value: boolean) => void;
+    readonly onChildrenLoaded?: ChildrenLoadedConfig;
+    readonly disabled?: boolean;
+    readonly withinUserHierarchyInFilters?: boolean;
+    readonly selectableLevels?: ReadonlyArray<number>;
+    readonly selectOnClick?: boolean;
+    readonly typeInput?: string;
+    readonly hideMemberCount?: boolean;
+}
+
+interface OrgUnitRoot {
+    id: string;
+    level: number;
+    displayName: string;
+    shortName: string;
+    path: string;
+    children: any[];
+    geometry?: any;
+    memberCount?: number;
+    [key: string]: unknown;
+}
+
+interface SelectedFilters {
+    level: number | null;
+    orgUnitGroupId: string | null;
+    programId: string | null;
+}
+
+interface OrgUnitsSelectorState {
+    cancel: (() => void) | null;
+    levels: any[] | null;
+    roots: OrgUnitRoot[] | null;
+    groups: any[] | null;
+    programs: any[] | null;
+    currentRoot: OrgUnitRoot | null;
+    selectedFilters: SelectedFilters;
+    useShortNames: boolean | undefined;
+}
+
+export default class OrgUnitsSelector extends React.Component<
+    OrgUnitsSelectorProps,
+    OrgUnitsSelectorState
+> {
     static defaultProps = {
         levels: null,
         labelChildren: null,
@@ -72,10 +112,12 @@ export default class OrgUnitsSelector extends React.Component {
     };
 
     static childContextTypes = {
-        api: PropTypes.object.isRequired,
+        api: (): null => null,
     };
 
-    constructor(props) {
+    contentsStyle: React.CSSProperties;
+
+    constructor(props: OrgUnitsSelectorProps) {
         super(props);
 
         this.state = {
@@ -95,9 +137,9 @@ export default class OrgUnitsSelector extends React.Component {
         this.contentsStyle = { ...styles.contents, height: props.height };
     }
 
-    componentDidMount() {
+    componentDidMount(): void {
         const { props } = this;
-        const { filterByLevel, filterByGroup, filterByProgram } = props.controls;
+        const { filterByLevel, filterByGroup, filterByProgram } = props.controls!;
 
         Promise.all([
             !filterByLevel
@@ -110,7 +152,7 @@ export default class OrgUnitsSelector extends React.Component {
                           filter: { level: { in: props.levels } },
                       })
                       .getData()
-                      .then(({ objects }) => objects),
+                      .then(({ objects }: { objects: any[] }) => objects),
             !filterByGroup
                 ? Promise.resolve([])
                 : props.api.models.organisationUnitGroups
@@ -120,7 +162,7 @@ export default class OrgUnitsSelector extends React.Component {
                           fields: { id: true, displayName: true },
                       })
                       .getData()
-                      .then(({ objects }) => objects),
+                      .then(({ objects }: { objects: any[] }) => objects),
             !filterByProgram
                 ? Promise.resolve([])
                 : props.api.models.programs
@@ -130,11 +172,11 @@ export default class OrgUnitsSelector extends React.Component {
                           fields: { id: true, displayName: true },
                       })
                       .getData()
-                      .then(({ objects }) => objects),
+                      .then(({ objects }: { objects: any[] }) => objects),
             this.getRoots(),
         ]).then(([levels, groups, programs, defaultRoots]) => {
             this.setState({
-                roots: defaultRoots,
+                roots: defaultRoots as OrgUnitRoot[],
                 levels,
                 groups,
                 programs,
@@ -142,7 +184,11 @@ export default class OrgUnitsSelector extends React.Component {
         });
     }
 
-    queryRoots({ search }) {
+    queryRoots({
+        search,
+    }: {
+        search?: string;
+    }): { getData: () => Promise<{ objects: any[] }>; cancel?: () => void } {
         const { api, rootIds, listParams, withinUserHierarchyInFilters } = this.props;
         const baseOptions = {
             fields: {
@@ -168,14 +214,16 @@ export default class OrgUnitsSelector extends React.Component {
             let cancel = false;
             return {
                 getData: async () => {
-                    const responses = await promiseMap(_.chunk(rootIds, 400), ids => {
+                    const responses = await promiseMap(_.chunk(rootIds, 400), (ids: string[]) => {
                         if (cancel) return { objects: [] };
                         return api.models.organisationUnits
                             .get({ ...baseOptions, paging: false, filter: { id: { in: ids } } })
                             .getData();
                     });
 
-                    return { objects: _.flatMap(responses, ({ objects }) => objects) };
+                    return {
+                        objects: _.flatMap(responses, ({ objects }: { objects: any[] }) => objects),
+                    };
                 },
                 cancel: () => {
                     cancel = true;
@@ -186,56 +234,56 @@ export default class OrgUnitsSelector extends React.Component {
         }
     }
 
-    getRoots({ search } = {}) {
+    getRoots({ search }: { search?: string } = {}): Promise<OrgUnitRoot[]> {
         const { rootIds, selectableLevels } = this.props;
-        const postFilter = search
-            ? orgUnits =>
+        const postFilter: (orgUnits: OrgUnitRoot[]) => OrgUnitRoot[] = search
+            ? (orgUnits: OrgUnitRoot[]) =>
                   _(orgUnits)
-                      .filter(orgUnit =>
+                      .filter((orgUnit: OrgUnitRoot) =>
                           selectableLevels
                               ? selectableLevels.includes(orgUnit.level)
                               : !rootIds || rootIds.some(ouId => orgUnit.path.includes(ouId))
                       )
                       .take(50)
                       .value()
-            : _.identity;
+            : (orgUnits: OrgUnitRoot[]) => orgUnits;
 
         const response = this.queryRoots({ search });
         if (this.state.cancel) this.state.cancel();
-        this.setState({ cancel: response.cancel });
+        this.setState({ cancel: response.cancel || null });
 
         return response
             .getData()
-            .then(({ objects }) => objects)
+            .then(({ objects }: { objects: OrgUnitRoot[] }) => objects)
             .then(postFilter);
     }
 
-    getChildContext() {
+    getChildContext(): { api: any } {
         return {
             api: this.props.api,
         };
     }
 
-    handleSelectionUpdate = newSelection => {
-        this.props.onChange(newSelection);
+    handleSelectionUpdate = (newSelection: ReadonlyArray<string>): void => {
+        this.props.onChange(newSelection as string[]);
     };
 
-    handleOrgUnitClick = (root, event, orgUnit) => {
+    handleOrgUnitClick = (root: OrgUnitRoot, _event: any, orgUnit: { path: string }): void => {
         if (this.props.selected.includes(orgUnit.path)) {
             const newSelected = [...this.props.selected];
             newSelected.splice(this.props.selected.indexOf(orgUnit.path), 1);
-            decrementMemberCount(root, orgUnit);
+            decrementMemberCount((root as unknown) as OrgUnitNode, orgUnit);
             this.props.onChange(newSelected);
         } else {
-            incrementMemberCount(root, orgUnit);
+            incrementMemberCount((root as unknown) as OrgUnitNode, orgUnit);
             const newSelected = this.props.selected.concat(orgUnit.path);
             this.props.onChange(this.props.singleSelection ? [orgUnit.path] : newSelected);
         }
     };
 
-    handleChildrenLoaded = (root, children) => {
+    handleChildrenLoaded = (root: OrgUnitRoot, children: any[]): void => {
         this.setState(state => ({
-            roots: state.roots.map(r => (r.path === root.path ? mergeChildren(r, children) : r)),
+            roots: state.roots!.map(r => (r.path === root.path ? mergeChildren(r, children) : r)),
         }));
 
         if (this.props.onChildrenLoaded?.fn) {
@@ -243,7 +291,7 @@ export default class OrgUnitsSelector extends React.Component {
         }
     };
 
-    renderOrgUnitSelectTitle = () => {
+    renderOrgUnitSelectTitle = (): React.ReactElement => {
         const { currentRoot } = this.state;
 
         return currentRoot ? (
@@ -259,43 +307,43 @@ export default class OrgUnitsSelector extends React.Component {
         );
     };
 
-    changeRoot = currentRoot => {
+    changeRoot = (currentRoot: any): void => {
         this.setState({ currentRoot });
     };
 
-    filterOrgUnits = async search => {
+    filterOrgUnits = async (search: string): Promise<void> => {
         const roots = await this.getRoots({ search });
         this.setState({ roots });
     };
 
-    changeLevel = level => {
+    changeLevel = (level: string | number): void => {
         this.setState(oldState => ({
             selectedFilters: {
                 ...oldState.selectedFilters,
-                level,
+                level: level as number,
             },
         }));
     };
 
-    changeOrgUnitGroup = orgUnitGroupId => {
+    changeOrgUnitGroup = (orgUnitGroupId: string | number): void => {
         this.setState(oldState => ({
             selectedFilters: {
                 ...oldState.selectedFilters,
-                orgUnitGroupId,
+                orgUnitGroupId: orgUnitGroupId as string,
             },
         }));
     };
 
-    changeProgram = programId => {
+    changeProgram = (programId: string | number): void => {
         this.setState(oldState => ({
             selectedFilters: {
                 ...oldState.selectedFilters,
-                programId,
+                programId: programId as string,
             },
         }));
     };
 
-    onUseShortNamesChange = () => {
+    onUseShortNamesChange = (): void => {
         const newValue = !this.state.useShortNames;
         this.setState({ useShortNames: newValue });
         if (this.props.onUseShortNamesChange) {
@@ -303,7 +351,7 @@ export default class OrgUnitsSelector extends React.Component {
         }
     };
 
-    render() {
+    render(): React.ReactNode {
         if (!this.state.levels) return null;
 
         const {
@@ -328,17 +376,18 @@ export default class OrgUnitsSelector extends React.Component {
             square,
             selectOnClick,
             selectableIds,
-            initiallyExpanded = roots.length > 1 ? [] : roots.map(ou => ou.path),
+            initiallyExpanded = roots!.length > 1 ? [] : roots!.map(ou => ou.path),
             disabled,
             withinUserHierarchyInFilters,
         } = this.props;
-        const { filterByLevel, filterByGroup, filterByProgram, selectAll } = controls;
+        const { filterByLevel, filterByGroup, filterByProgram, selectAll } = controls!;
 
         const someControlsVisible = filterByLevel || filterByGroup || selectAll || filterByProgram;
         const { renderOrgUnitSelectTitle: OrgUnitSelectTitle } = this;
-        const getClass = root => `ou-root-${root.path.split("/").length - 1}`;
+        const getClass = (root: OrgUnitRoot): string =>
+            `ou-root-${root.path.split("/").length - 1}`;
 
-        const cardWideStyle = {
+        const cardWideStyle: React.CSSProperties = {
             ...styles.cardWide,
             boxShadow: !withElevation ? "none" : undefined,
             width: fullWidth ? 1052 : undefined,
@@ -366,14 +415,14 @@ export default class OrgUnitsSelector extends React.Component {
                                     label={i18n.t("Use short names")}
                                 />
                             ) : null}
-                            {roots.map(root => (
+                            {roots!.map(root => (
                                 <div key={root.path} className={`ou-root ${getClass(root)}`}>
                                     <OrgUnitTree
-                                        key={useShortNames}
+                                        key={String(useShortNames)}
                                         api={api}
                                         root={root}
                                         selected={selected}
-                                        currentRoot={currentRoot}
+                                        currentRoot={currentRoot || undefined}
                                         initiallyExpanded={initiallyExpanded}
                                         onSelectClick={this.handleOrgUnitClick.bind(this, root)}
                                         selectableLevels={selectableLevels}
@@ -382,15 +431,16 @@ export default class OrgUnitsSelector extends React.Component {
                                         onChildrenLoaded={
                                             this.props.onChildrenLoaded
                                                 ? {
-                                                      fields: this.props.onChildrenLoaded.fields,
+                                                      fields: this.props.onChildrenLoaded
+                                                          .fields as ReadonlyArray<string>,
                                                       fn: this.handleChildrenLoaded.bind(
                                                           this,
                                                           root
-                                                      ),
+                                                      ) as (children: ReadonlyArray<any>) => void,
                                                   }
                                                 : undefined
                                         }
-                                        labelChildren={this.props.labelChildren}
+                                        labelChildren={this.props.labelChildren || undefined}
                                         hideCheckboxes={hideCheckboxes}
                                         hideMemberCount={hideMemberCount}
                                         selectOnClick={selectOnClick}
@@ -412,9 +462,9 @@ export default class OrgUnitsSelector extends React.Component {
                                             {filterByLevel && (
                                                 <div style={styles.selectByLevel}>
                                                     <OrgUnitSelectByLevel
-                                                        levels={levels}
+                                                        levels={levels!}
                                                         selected={selected}
-                                                        currentRoot={currentRoot}
+                                                        currentRoot={currentRoot || undefined}
                                                         withinUserHierarchyInFilters={
                                                             withinUserHierarchyInFilters
                                                         }
@@ -430,9 +480,9 @@ export default class OrgUnitsSelector extends React.Component {
                                             {filterByGroup && (
                                                 <div style={styles.selectByGroup}>
                                                     <OrgUnitSelectByGroup
-                                                        groups={groups}
+                                                        groups={groups!}
                                                         selected={selected}
-                                                        currentRoot={currentRoot}
+                                                        currentRoot={currentRoot || undefined}
                                                         onUpdateSelection={
                                                             this.handleSelectionUpdate
                                                         }
@@ -449,9 +499,9 @@ export default class OrgUnitsSelector extends React.Component {
                                             {filterByProgram && (
                                                 <div>
                                                     <OrgUnitSelectByProgram
-                                                        programs={programs}
+                                                        programs={programs!}
                                                         selected={selected}
-                                                        currentRoot={currentRoot}
+                                                        currentRoot={currentRoot || undefined}
                                                         onUpdateSelection={
                                                             this.handleSelectionUpdate
                                                         }
@@ -467,7 +517,7 @@ export default class OrgUnitsSelector extends React.Component {
                                         <div style={styles.selectAll}>
                                             <OrgUnitSelectAll
                                                 selected={selected}
-                                                currentRoot={currentRoot}
+                                                currentRoot={currentRoot || undefined}
                                                 onUpdateSelection={this.handleSelectionUpdate}
                                                 selectableIds={selectableIds}
                                                 selectedFilters={selectedFilters}
@@ -488,8 +538,8 @@ export default class OrgUnitsSelector extends React.Component {
 // This is a modified version of mergeChildren from @dhis2/d2-ui-org-unit-tree.
 // The original function works when root is the absolute root of the tree (level 1), but
 // here we will have any organisation unit as root when filtering.
-function mergeChildren(root, children) {
-    function assignChildren(root, targetPath, children) {
+function mergeChildren(root: OrgUnitRoot, children: any[]): OrgUnitRoot {
+    function assignChildren(root: any, targetPath: string[], children: any[]): any {
         if (root.path === "/" + targetPath.join("/")) {
             root.children = children;
         } else {
@@ -514,7 +564,7 @@ function mergeChildren(root, children) {
     }
 }
 
-const styles = {
+const styles: Record<string, React.CSSProperties> = {
     cardWide: {
         margin: 0,
         transition: "all 175ms ease-out",

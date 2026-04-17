@@ -1,24 +1,47 @@
 import _ from "lodash";
 import log from "loglevel";
-import PropTypes from "prop-types";
 import React from "react";
 import i18n from "../utils/i18n";
 import {
+    OrgUnit,
+    OrgUnitSelectProps,
+    OrgUnitSelectState,
     addToSelection,
     handleChangeSelection,
     removeFromSelection,
     renderDropdown,
 } from "./common";
 
-class OrgUnitSelectByProgram extends React.Component {
-    constructor(props, context) {
+interface OrgUnitSelectByProgramProps extends OrgUnitSelectProps {
+    readonly programs: ReadonlyArray<{ readonly id: string; readonly displayName: string }>;
+    readonly currentRoot?: {
+        readonly id: string;
+        readonly displayName: string;
+        readonly path: string;
+        readonly level?: number;
+    };
+}
+
+class OrgUnitSelectByProgram extends React.Component<
+    OrgUnitSelectByProgramProps,
+    OrgUnitSelectState
+> {
+    declare context: { api: any };
+    static contextTypes = { api: () => null };
+
+    programCache: Record<string, OrgUnit[]> = {};
+
+    addToSelection: (orgUnits: ReadonlyArray<OrgUnit>) => void;
+    removeFromSelection: (orgUnits: ReadonlyArray<OrgUnit>) => void;
+    handleChangeSelection: (event: React.ChangeEvent<{ value: unknown }>) => void;
+
+    constructor(props: OrgUnitSelectByProgramProps, context: { api: any }) {
         super(props, context);
 
         this.state = {
             loading: false,
             selection: undefined,
         };
-        this.programCache = {};
 
         this.addToSelection = addToSelection.bind(this);
         this.removeFromSelection = removeFromSelection.bind(this);
@@ -29,7 +52,7 @@ class OrgUnitSelectByProgram extends React.Component {
         this.handleDeselect = this.handleDeselect.bind(this);
     }
 
-    getOrgUnitsForProgram(programId, ignoreCache = false) {
+    getOrgUnitsForProgram(programId: string, ignoreCache = false): Promise<OrgUnit[]> {
         const { api } = this.context;
         return new Promise(resolve => {
             if (this.props.currentRoot) {
@@ -45,17 +68,22 @@ class OrgUnitSelectByProgram extends React.Component {
                     filter: `programs.id:eq:${programId}`,
                 })
                     .getData()
-                    .then(({ organisationUnits }) => organisationUnits)
-                    .then(orgUnits => {
+                    .then(
+                        ({ organisationUnits }: { organisationUnits: OrgUnit[] }) =>
+                            organisationUnits
+                    )
+                    .then((orgUnits: OrgUnit[]) => {
                         log.debug(
-                            `Loaded ${orgUnits.length} org units for program ${programId} within ${this.props.currentRoot.displayName}`
+                            `Loaded ${orgUnits.length} org units for program ${programId} within ${
+                                this.props.currentRoot!.displayName
+                            }`
                         );
                         this.setState({ loading: false });
 
                         resolve(orgUnits.slice());
                     });
             } else if (!ignoreCache && this.programCache.hasOwnProperty(programId)) {
-                resolve(this.programCache[programId].slice());
+                resolve(this.programCache[programId]!.slice());
             } else {
                 log.debug(`Loading org units for program ${programId}`);
                 this.setState({ loading: true });
@@ -67,8 +95,11 @@ class OrgUnitSelectByProgram extends React.Component {
                         filter: { id: { eq: programId } },
                     })
                     .getData()
-                    .then(({ objects }) => _.first(objects) || {})
-                    .then(({ organisationUnits = [] }) => {
+                    .then(
+                        ({ objects }: { objects: Array<{ organisationUnits?: OrgUnit[] }> }) =>
+                            _.first(objects) || {}
+                    )
+                    .then(({ organisationUnits = [] }: { organisationUnits?: OrgUnit[] }) => {
                         log.debug(
                             `Loaded ${organisationUnits.length} org units for program ${programId}`
                         );
@@ -78,7 +109,7 @@ class OrgUnitSelectByProgram extends React.Component {
                         // Make a copy of the returned array to ensure that the cache won't be modified from elsewhere
                         resolve(organisationUnits.slice());
                     })
-                    .catch(err => {
+                    .catch((err: Error) => {
                         this.setState({ loading: false });
                         log.error(`Failed to load org units in program ${programId}:`, err);
                     });
@@ -86,15 +117,15 @@ class OrgUnitSelectByProgram extends React.Component {
         });
     }
 
-    handleSelect() {
-        this.getOrgUnitsForProgram(this.state.selection).then(this.addToSelection);
+    handleSelect(): void {
+        this.getOrgUnitsForProgram(this.state.selection as string).then(this.addToSelection);
     }
 
-    handleDeselect() {
-        this.getOrgUnitsForProgram(this.state.selection).then(this.removeFromSelection);
+    handleDeselect(): void {
+        this.getOrgUnitsForProgram(this.state.selection as string).then(this.removeFromSelection);
     }
 
-    render() {
+    render(): React.ReactNode {
         const menuItems = this.props.programs;
         const label = i18n.t("Program");
 
@@ -103,30 +134,5 @@ class OrgUnitSelectByProgram extends React.Component {
         return renderDropdown.call(this, menuItems, label);
     }
 }
-
-OrgUnitSelectByProgram.propTypes = {
-    // programs is an array of either ModelCollection objects or plain objects,
-    // where each object should contain `id` and `displayName` properties
-    programs: PropTypes.oneOfType([PropTypes.object, PropTypes.array]).isRequired,
-
-    // selected is an array of selected organisation unit IDs
-    selected: PropTypes.array.isRequired,
-
-    // Whenever the selection changes, onUpdateSelection will be called with
-    // one argument: The new array of selected organisation unit paths
-    onUpdateSelection: PropTypes.func.isRequired,
-
-    // When a the selected item of the dropdown is changed, onItemSelection will be called with
-    // one argument: The selected program id in the dropdown
-    onItemSelection: PropTypes.func.isRequired,
-
-    // If currentRoot is set, only org units that are descendants of the
-    // current root org unit will be added to or removed from the selection
-    currentRoot: PropTypes.object,
-
-    // TODO: Add program cache prop?
-};
-
-OrgUnitSelectByProgram.contextTypes = { api: PropTypes.any.isRequired };
 
 export default OrgUnitSelectByProgram;
