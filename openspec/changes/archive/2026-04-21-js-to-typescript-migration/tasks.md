@@ -51,4 +51,4 @@
 - [x] 8.1 [BE] Remove `allowJs: true` from `tsconfig.json`
 - [x] 8.2 [BE] Simplify `jest.config.js`: drop `babel-jest` transform for JS, use `ts-jest` only; update `testRegex` if needed; convert `setupEnzyme.js` to `.ts`
 - [x] 8.3 [BE] Remove `prop-types` from `devDependencies` in `package.json` (pre-existing imports in `DatePicker.tsx` and `Wizard.tsx` cleaned up as part of Boy Scout Rule)
-- [ ] 8.4 [BE] Run `yarn build && yarn test && yarn lint` to verify the full migration
+- [x] 8.4 [BE] Run `yarn build && yarn test && yarn lint` to verify the full migration
