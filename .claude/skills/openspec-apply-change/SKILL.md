@@ -87,6 +87,16 @@ Implement tasks from an OpenSpec change.
    - If all done: suggest archive
    - If paused: explain why and wait for guidance
 
+8. **Verify before declaring done**
+
+   After the last task is checked off and before showing "Implementation Complete":
+
+   - Run `npx tsc --noEmit` — fix every error.
+   - Run `yarn lint` — fix every error AND warning (the project treats warnings as real issues).
+   - Re-run both until clean. Only then show the completion summary.
+
+   If a warning reflects an intentional decision, do not suppress it with `eslint-disable`; raise it with the user first.
+
 **Output During Implementation**
 
 ```
