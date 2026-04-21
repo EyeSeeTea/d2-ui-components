@@ -1,7 +1,6 @@
 import { makeStyles } from "@material-ui/core";
 import Paper from "@material-ui/core/Paper";
 import _ from "lodash";
-import { ReactComponentLike } from "prop-types";
 import React, { ReactElement, useCallback, useEffect, useState } from "react";
 import { useSnackbar } from "../snackbar";
 import { FeedbackMessages } from "./FeedbackMessages";
@@ -179,7 +178,7 @@ export interface WizardStep {
     label: string;
     warning?: string;
     description?: string;
-    component: ReactComponentLike;
+    component: React.ComponentType<any>;
     props?: object;
     help?: React.ReactNode;
     helpDialogIsInitialOpen?: boolean;

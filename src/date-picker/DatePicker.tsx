@@ -7,7 +7,6 @@ import {
 } from "@material-ui/pickers";
 import { Dictionary } from "lodash";
 import moment from "moment";
-import PropTypes from "prop-types";
 import React, { CSSProperties } from "react";
 
 export interface DatePickerProps extends MuiDatePickerProps {
@@ -71,14 +70,6 @@ export const DatePicker: React.FC<DatePickerProps> = ({
             </MuiPickersUtilsProvider>
         </MuiThemeProvider>
     );
-};
-
-DatePicker.propTypes = {
-    label: PropTypes.string,
-    value: PropTypes.object,
-    onChange: PropTypes.func.isRequired,
-    placeholder: PropTypes.string,
-    isFilter: PropTypes.bool,
 };
 
 DatePicker.defaultProps = {
