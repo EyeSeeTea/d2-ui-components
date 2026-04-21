@@ -1,3 +1,5 @@
+declare module "enzyme-adapter-react-16";
+
 declare module "loglevel" {
     const log: {
         trace(...msg: unknown[]): void;
