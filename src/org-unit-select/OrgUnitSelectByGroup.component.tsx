@@ -42,7 +42,7 @@ class OrgUnitSelectByGroup extends React.Component<
     OrgUnitSelectByGroupProps,
     OrgUnitSelectByGroupState
 > {
-    declare context: { api: any };
+    context: { api: any } = { api: null };
     static contextTypes = { api: () => null };
 
     groupCache: Record<string, OrgUnitWithLevel[]> = {};

@@ -56,7 +56,7 @@ interface OrgUnitSelectAllState {
 }
 
 class OrgUnitSelectAll extends React.Component<OrgUnitSelectAllProps, OrgUnitSelectAllState> {
-    declare context: { api: any };
+    context: { api: any } = { api: null };
     static contextTypes = { api: () => null };
 
     cacheByFilters: Record<string, OrgUnit[]> = {};

@@ -36,7 +36,7 @@ interface GroupEditorState {
 }
 
 export default class GroupEditor extends Component<GroupEditorProps, GroupEditorState> {
-    declare context: { d2: any };
+    context: { d2: any } = { d2: null };
     static contextTypes = { d2: () => null };
 
     static defaultProps = {

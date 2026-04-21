@@ -29,7 +29,7 @@ interface OrgUnitSelectByLevelProps extends OrgUnitSelectProps {
 }
 
 class OrgUnitSelectByLevel extends React.Component<OrgUnitSelectByLevelProps, OrgUnitSelectState> {
-    declare context: { api: any };
+    context: { api: any } = { api: null };
     static contextTypes = { api: () => null };
 
     levelCache: Record<number, OrgUnit[]> = {};

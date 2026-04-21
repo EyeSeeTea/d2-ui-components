@@ -26,7 +26,7 @@ class OrgUnitSelectByProgram extends React.Component<
     OrgUnitSelectByProgramProps,
     OrgUnitSelectState
 > {
-    declare context: { api: any };
+    context: { api: any } = { api: null };
     static contextTypes = { api: () => null };
 
     programCache: Record<string, OrgUnit[]> = {};
