@@ -6,6 +6,7 @@ import log from "loglevel";
 
 import GroupEditor from "./GroupEditor.component";
 import i18n from "../utils/i18n";
+import { ensure } from "../utils/assert";
 
 function moveItemOneSpotDownIn(currentlySelected: string[]): (itemToFind: string) => void {
     return itemToFind => {
@@ -17,8 +18,14 @@ function moveItemOneSpotDownIn(currentlySelected: string[]): (itemToFind: string
         // Can only move the item when the indexOfItem does not refer to the last item
         if (indexOfItem < currentlySelected.length - 1) {
             // Swap the item in the list
-            const tempItem = currentlySelected[indexOfItem + 1]!;
-            currentlySelected[indexOfItem + 1] = currentlySelected[indexOfItem]!;
+            const tempItem = ensure(
+                currentlySelected[indexOfItem + 1],
+                "Expected item at next index"
+            );
+            currentlySelected[indexOfItem + 1] = ensure(
+                currentlySelected[indexOfItem],
+                "Expected item at current index"
+            );
             currentlySelected[indexOfItem] = tempItem;
         }
     };
@@ -34,8 +41,14 @@ function moveItemOneSpotUpIn(currentlySelected: string[]): (itemToFind: string) 
         // Can only move the item when the indexOfItem does not refer to the first item
         if (indexOfItem > 0) {
             // Swap the item in the list
-            const tempItem = currentlySelected[indexOfItem - 1]!;
-            currentlySelected[indexOfItem - 1] = currentlySelected[indexOfItem]!;
+            const tempItem = ensure(
+                currentlySelected[indexOfItem - 1],
+                "Expected item at previous index"
+            );
+            currentlySelected[indexOfItem - 1] = ensure(
+                currentlySelected[indexOfItem],
+                "Expected item at current index"
+            );
             currentlySelected[indexOfItem] = tempItem;
         }
     };
@@ -100,7 +113,7 @@ class GroupEditorWithOrdering extends Component<GroupEditorWithOrderingProps> {
         itemsToMoveUp.forEach(moveItemOneSpotUpIn(currentlySelected));
 
         // Emit the changed order to the event handler
-        this.props.onOrderChanged!(currentlySelected);
+        if (this.props.onOrderChanged) this.props.onOrderChanged(currentlySelected);
     };
 
     moveDown = (): void => {
@@ -119,7 +132,7 @@ class GroupEditorWithOrdering extends Component<GroupEditorWithOrderingProps> {
             .forEach(moveItemOneSpotDownIn(currentlySelected));
 
         // Emit the changed order to the event handler
-        this.props.onOrderChanged!(currentlySelected);
+        if (this.props.onOrderChanged) this.props.onOrderChanged(currentlySelected);
     };
 
     render(): React.ReactNode {

@@ -1,6 +1,7 @@
 import React from "react";
 import log from "loglevel";
 import Button from "@material-ui/core/Button";
+import { ensure } from "../utils/assert";
 import i18n from "../utils/i18n";
 
 import {
@@ -47,6 +48,8 @@ interface OrgUnitSelectAllProps extends Omit<OrgUnitSelectProps, "onItemSelectio
     readonly selectableLevels?: ReadonlyArray<number>;
 }
 
+type CurrentRoot = NonNullable<OrgUnitSelectAllProps["currentRoot"]>;
+
 interface OrgUnitSelectAllState {
     loading: boolean;
     cache: string[] | null;
@@ -83,7 +86,7 @@ class OrgUnitSelectAll extends React.Component<OrgUnitSelectAllProps, OrgUnitSel
     handleSelectAll(): void {
         if (this.props.currentRoot) {
             this.setState({ loading: true });
-            this.getDescendantOrgUnits().then(orgUnits => {
+            this.getDescendantOrgUnits(this.props.currentRoot).then(orgUnits => {
                 this.setState({ loading: false });
                 this.addToSelection(orgUnits);
             });
@@ -122,7 +125,7 @@ class OrgUnitSelectAll extends React.Component<OrgUnitSelectAllProps, OrgUnitSel
 
         const rootLevel =
             currentRoot.level || currentRoot.path
-                ? this.props.currentRoot!.path.match(/\//g)!.length
+                ? ensure(currentRoot.path.match(/\//g), "path must contain slashes").length
                 : NaN;
         return level - rootLevel;
     }
@@ -181,7 +184,8 @@ class OrgUnitSelectAll extends React.Component<OrgUnitSelectAllProps, OrgUnitSel
                     this.addToSelection(orgUnitArray);
                 });
         } else if (this.cacheByFilters.hasOwnProperty(cacheKey)) {
-            this.addToSelection(this.cacheByFilters[cacheKey]!.slice());
+            const cached = this.cacheByFilters[cacheKey];
+            this.addToSelection(cached.slice());
             this.setState({ loading: false });
         } else {
             log.debug(`Loading org units for level ${level}`);
@@ -216,9 +220,9 @@ class OrgUnitSelectAll extends React.Component<OrgUnitSelectAllProps, OrgUnitSel
         }
     }
 
-    getDescendantOrgUnits(): Promise<OrgUnit[]> {
+    getDescendantOrgUnits(currentRoot: CurrentRoot): Promise<OrgUnit[]> {
         return this.context.api
-            .get("/organisationUnits/" + this.props.currentRoot!.id, {
+            .get("/organisationUnits/" + currentRoot.id, {
                 paging: false,
                 includeDescendants: true,
                 fields: "id,path",
@@ -230,7 +234,7 @@ class OrgUnitSelectAll extends React.Component<OrgUnitSelectAllProps, OrgUnitSel
     handleDeselectAll(): void {
         if (this.props.currentRoot) {
             this.setState({ loading: true });
-            this.getDescendantOrgUnits().then(orgUnits => {
+            this.getDescendantOrgUnits(this.props.currentRoot).then(orgUnits => {
                 this.setState({ loading: false });
                 this.removeFromSelection(orgUnits);
             });

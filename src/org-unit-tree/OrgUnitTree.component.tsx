@@ -381,7 +381,7 @@ class OrgUnitTree extends React.Component<OrgUnitTreeProps, OrgUnitTreeState> {
         // Wrap the change root click handler in order to stop event propagation
         const setCurrentRoot = (e: React.MouseEvent): void => {
             e.stopPropagation();
-            this.props.onChangeCurrentRoot!(currentOu);
+            if (this.props.onChangeCurrentRoot) this.props.onChangeCurrentRoot(currentOu);
         };
         const handletypeInput = typeInput !== undefined ? typeInput : "checkbox";
 

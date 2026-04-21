@@ -10,6 +10,7 @@ import {
 import { decrementMemberCount, incrementMemberCount, OrgUnitTree } from "../org-unit-tree";
 import type { OrgUnitNode } from "../org-unit-tree/utils";
 import SearchBox from "../search-box/SearchBox";
+import { ensure } from "../utils/assert";
 import i18n from "../utils/i18n";
 import { promiseMap } from "../utils/promiseMap";
 
@@ -21,6 +22,13 @@ interface Controls {
     readonly filterByProgram?: boolean;
     readonly selectAll?: boolean;
 }
+
+const defaultControls: Controls = {
+    filterByLevel: true,
+    filterByGroup: true,
+    filterByProgram: false,
+    selectAll: true,
+};
 
 interface ChildrenLoadedConfig {
     readonly fields: ReadonlyArray<string>;
@@ -139,7 +147,8 @@ export default class OrgUnitsSelector extends React.Component<
 
     componentDidMount(): void {
         const { props } = this;
-        const { filterByLevel, filterByGroup, filterByProgram } = props.controls!;
+        const { controls = defaultControls } = props;
+        const { filterByLevel, filterByGroup, filterByProgram } = controls;
 
         Promise.all([
             !filterByLevel
@@ -283,7 +292,9 @@ export default class OrgUnitsSelector extends React.Component<
 
     handleChildrenLoaded = (root: OrgUnitRoot, children: any[]): void => {
         this.setState(state => ({
-            roots: state.roots!.map(r => (r.path === root.path ? mergeChildren(r, children) : r)),
+            roots: ensure(state.roots, "roots must be loaded").map(r =>
+                r.path === root.path ? mergeChildren(r, children) : r
+            ),
         }));
 
         if (this.props.onChildrenLoaded?.fn) {
@@ -352,21 +363,22 @@ export default class OrgUnitsSelector extends React.Component<
     };
 
     render(): React.ReactNode {
-        if (!this.state.levels) return null;
-
         const {
             levels,
-            currentRoot,
             roots,
             groups,
             programs,
+            currentRoot,
             selectedFilters,
             useShortNames,
         } = this.state;
+
+        if (!levels || !roots || !groups || !programs) return null;
+
+        const { controls = defaultControls } = this.props;
         const {
             api,
             selected,
-            controls,
             withElevation,
             selectableLevels,
             typeInput,
@@ -376,11 +388,11 @@ export default class OrgUnitsSelector extends React.Component<
             square,
             selectOnClick,
             selectableIds,
-            initiallyExpanded = roots!.length > 1 ? [] : roots!.map(ou => ou.path),
+            initiallyExpanded = roots.length > 1 ? [] : roots.map(ou => ou.path),
             disabled,
             withinUserHierarchyInFilters,
         } = this.props;
-        const { filterByLevel, filterByGroup, filterByProgram, selectAll } = controls!;
+        const { filterByLevel, filterByGroup, filterByProgram, selectAll } = controls;
 
         const someControlsVisible = filterByLevel || filterByGroup || selectAll || filterByProgram;
         const { renderOrgUnitSelectTitle: OrgUnitSelectTitle } = this;
@@ -415,7 +427,7 @@ export default class OrgUnitsSelector extends React.Component<
                                     label={i18n.t("Use short names")}
                                 />
                             ) : null}
-                            {roots!.map(root => (
+                            {roots.map(root => (
                                 <div key={root.path} className={`ou-root ${getClass(root)}`}>
                                     <OrgUnitTree
                                         key={String(useShortNames)}
@@ -462,7 +474,7 @@ export default class OrgUnitsSelector extends React.Component<
                                             {filterByLevel && (
                                                 <div style={styles.selectByLevel}>
                                                     <OrgUnitSelectByLevel
-                                                        levels={levels!}
+                                                        levels={levels}
                                                         selected={selected}
                                                         currentRoot={currentRoot || undefined}
                                                         withinUserHierarchyInFilters={
@@ -480,7 +492,7 @@ export default class OrgUnitsSelector extends React.Component<
                                             {filterByGroup && (
                                                 <div style={styles.selectByGroup}>
                                                     <OrgUnitSelectByGroup
-                                                        groups={groups!}
+                                                        groups={groups}
                                                         selected={selected}
                                                         currentRoot={currentRoot || undefined}
                                                         onUpdateSelection={
@@ -499,7 +511,7 @@ export default class OrgUnitsSelector extends React.Component<
                                             {filterByProgram && (
                                                 <div>
                                                     <OrgUnitSelectByProgram
-                                                        programs={programs!}
+                                                        programs={programs}
                                                         selected={selected}
                                                         currentRoot={currentRoot || undefined}
                                                         onUpdateSelection={

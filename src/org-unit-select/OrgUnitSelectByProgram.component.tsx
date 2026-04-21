@@ -56,12 +56,13 @@ class OrgUnitSelectByProgram extends React.Component<
         const { api } = this.context;
         return new Promise(resolve => {
             if (this.props.currentRoot) {
+                const currentRoot = this.props.currentRoot;
                 log.debug(
-                    `Loading org units for program ${programId} within ${this.props.currentRoot.displayName}`
+                    `Loading org units for program ${programId} within ${currentRoot.displayName}`
                 );
                 this.setState({ loading: true });
 
-                api.get("/organisationUnits/" + this.props.currentRoot.id, {
+                api.get("/organisationUnits/" + currentRoot.id, {
                     paging: false,
                     includeDescendants: true,
                     fields: "id,path",
@@ -74,16 +75,15 @@ class OrgUnitSelectByProgram extends React.Component<
                     )
                     .then((orgUnits: OrgUnit[]) => {
                         log.debug(
-                            `Loaded ${orgUnits.length} org units for program ${programId} within ${
-                                this.props.currentRoot!.displayName
-                            }`
+                            `Loaded ${orgUnits.length} org units for program ${programId} within ${currentRoot.displayName}`
                         );
                         this.setState({ loading: false });
 
                         resolve(orgUnits.slice());
                     });
             } else if (!ignoreCache && this.programCache.hasOwnProperty(programId)) {
-                resolve(this.programCache[programId]!.slice());
+                const cached = this.programCache[programId] as OrgUnit[];
+                resolve(cached.slice());
             } else {
                 log.debug(`Loading org units for program ${programId}`);
                 this.setState({ loading: true });

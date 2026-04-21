@@ -72,12 +72,13 @@ class OrgUnitSelectByGroup extends React.Component<
         const { api } = this.context;
         return new Promise(resolve => {
             if (this.props.currentRoot) {
+                const currentRoot = this.props.currentRoot;
                 log.debug(
-                    `Loading org units for group ${groupId} within ${this.props.currentRoot.displayName}`
+                    `Loading org units for group ${groupId} within ${currentRoot.displayName}`
                 );
                 this.setState({ loading: true });
 
-                api.get("/organisationUnits/" + this.props.currentRoot.id, {
+                api.get("/organisationUnits/" + currentRoot.id, {
                     paging: false,
                     includeDescendants: true,
                     fields: "id,path",
@@ -90,16 +91,15 @@ class OrgUnitSelectByGroup extends React.Component<
                     )
                     .then((orgUnits: OrgUnitWithLevel[]) => {
                         log.debug(
-                            `Loaded ${orgUnits.length} org units for group ${groupId} within ${
-                                this.props.currentRoot!.displayName
-                            }`
+                            `Loaded ${orgUnits.length} org units for group ${groupId} within ${currentRoot.displayName}`
                         );
                         this.setState({ loading: false });
 
                         resolve(orgUnits.slice());
                     });
             } else if (!ignoreCache && this.groupCache.hasOwnProperty(groupId)) {
-                resolve(this.groupCache[groupId]!.slice());
+                const cached = this.groupCache[groupId] as OrgUnitWithLevel[];
+                resolve(cached.slice());
             } else {
                 log.debug(`Loading org units for group ${groupId}`);
                 this.setState({ loading: true });
@@ -138,9 +138,10 @@ class OrgUnitSelectByGroup extends React.Component<
                                 : organisationUnits;
 
                             // Make a copy of the returned array to ensure that the cache won't be modified from elsewhere
-                            const excludeOrgUnits = this.state.orgUnitsInHierarchy
+                            const orgUnitsInHierarchy = this.state.orgUnitsInHierarchy;
+                            const excludeOrgUnits = orgUnitsInHierarchy
                                 ? filterOrgUnits.filter(orgUnit =>
-                                      this.state.orgUnitsInHierarchy!.has(orgUnit.id)
+                                      orgUnitsInHierarchy.has(orgUnit.id)
                                   )
                                 : filterOrgUnits;
 

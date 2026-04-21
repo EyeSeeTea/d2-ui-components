@@ -1,5 +1,6 @@
 import log from "loglevel";
 import React from "react";
+import { ensure } from "../utils/assert";
 import i18n from "../utils/i18n";
 import {
     OrgUnit,
@@ -58,9 +59,10 @@ class OrgUnitSelectByLevel extends React.Component<OrgUnitSelectByLevelProps, Or
         const { api } = this.context;
         return new Promise(resolve => {
             if (this.props.currentRoot) {
+                const currentRoot = this.props.currentRoot;
                 const rootLevel =
-                    this.props.currentRoot.level || this.props.currentRoot.path
-                        ? this.props.currentRoot.path.match(/\//g)!.length
+                    currentRoot.level || currentRoot.path
+                        ? ensure(currentRoot.path.match(/\//g), "path must contain slashes").length
                         : NaN;
                 const relativeLevel = level - rootLevel;
 
@@ -71,7 +73,7 @@ class OrgUnitSelectByLevel extends React.Component<OrgUnitSelectByLevelProps, Or
                     return resolve([]);
                 }
 
-                api.get("/organisationUnits/" + this.props.currentRoot.id, {
+                api.get("/organisationUnits/" + currentRoot.id, {
                     paging: false,
                     level: level - rootLevel,
                     fields: "id,path",
@@ -84,13 +86,14 @@ class OrgUnitSelectByLevel extends React.Component<OrgUnitSelectByLevelProps, Or
                     .then((orgUnitArray: OrgUnit[]) => {
                         log.debug(
                             `Loaded ${orgUnitArray.length} org units for level ` +
-                                `${relativeLevel} under ${this.props.currentRoot!.displayName}`
+                                `${relativeLevel} under ${currentRoot.displayName}`
                         );
                         this.setState({ loading: false });
                         resolve(orgUnitArray);
                     });
             } else if (!ignoreCache && this.levelCache.hasOwnProperty(level)) {
-                resolve(this.levelCache[level]!.slice());
+                const cached = this.levelCache[level] as OrgUnit[];
+                resolve(cached.slice());
             } else {
                 log.debug(`Loading org units for level ${level}`);
                 this.setState({ loading: true });
@@ -135,7 +138,8 @@ class OrgUnitSelectByLevel extends React.Component<OrgUnitSelectByLevelProps, Or
     render(): React.ReactNode {
         const currentRoot = this.props.currentRoot;
         const currentRootLevel = currentRoot
-            ? currentRoot.level || currentRoot.path.match(/\//g)!.length
+            ? currentRoot.level ||
+              ensure(currentRoot.path.match(/\//g), "path must contain slashes").length
             : 1;
 
         const menuItems = this.props.levels
