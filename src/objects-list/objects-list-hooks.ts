@@ -6,6 +6,7 @@ import {
     ReferenceObject,
     TableAction,
     TableColumn,
+    TableNotification,
     TablePagination,
     TableSelection,
     TableSorting,
@@ -13,6 +14,7 @@ import {
 } from "..";
 import i18n from "../utils/i18n";
 import { ObjectsListProps } from "./ObjectsList";
+import _ from "lodash";
 
 export interface TableConfig<Obj extends ReferenceObject>
     extends Omit<
@@ -133,4 +135,53 @@ export function useObjectsTable<Obj extends ReferenceObject>(
         initialState,
         ids: state.ids,
     };
+}
+
+export function useTableWithSelectionCount<T extends ReferenceObject>(
+    config: TableConfig<T>,
+    getRows: GetRows<T>,
+    getAllIds?: GetAllIds<T>
+): ObjectsListProps<T> {
+    const tableProps = useObjectsTable(config, getRows, getAllIds);
+    const [selection, setSelection] = useState<TableSelection[]>([]);
+
+    const onChange = useCallback(
+        (newState: TableState<T>) => {
+            setSelection(newState.selection ?? []);
+            tableProps.onChange(newState);
+        },
+        [tableProps]
+    );
+
+    const tableNotifications = useMemo<TableNotification[]>(() => {
+        if (selection.length === 0) return [];
+
+        const rows = tableProps.rows;
+        const total = tableProps.pagination?.total ?? rows.length;
+        const ids = tableProps.ids ?? [];
+
+        const selectionInOtherPages = _.differenceBy(selection, rows, "id");
+        const allSelectedInPage =
+            rows.length > 0 && _.differenceBy(rows, selection, "id").length === 0;
+        const multiplePagesAvailable = total > rows.length;
+        const selectAllImplemented = ids.length > 0;
+
+        const isSelectionCountVisible =
+            selection.length === total ||
+            selectionInOtherPages.length > 0 ||
+            (allSelectedInPage && multiplePagesAvailable && selectAllImplemented);
+        if (isSelectionCountVisible) return [];
+
+        return [
+            {
+                message: i18n.t("There are {{count}} items selected on this page.", {
+                    count: selection.length,
+                }),
+                link: i18n.t("Clear selection"),
+                newSelection: [],
+            },
+        ];
+    }, [selection, tableProps.rows, tableProps.pagination, tableProps.ids]);
+
+    return { ...tableProps, onChange, tableNotifications };
 }
