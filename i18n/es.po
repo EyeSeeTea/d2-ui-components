@@ -112,11 +112,10 @@ msgstr ""
 msgid "Search by name"
 msgstr "Buscar por nombre"
 
-#, fuzzy
-msgid "There are {{count}} items selected on this page."
+msgid "There is 1 item selected on this page."
 msgid_plural "There are {{count}} items selected on this page."
-msgstr[0] "Hay {{total}} elementos seleccionados en todas las páginas."
-msgstr[1] "Hay {{total}} elementos seleccionados en todas las páginas."
+msgstr[0] "Hay 1 elemento seleccionado en esta página."
+msgstr[1] "Hay {{count}} elementos seleccionados en esta página."
 
 msgid "Select all"
 msgstr "Seleccionar todo"
