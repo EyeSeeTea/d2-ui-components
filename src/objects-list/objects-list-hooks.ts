@@ -13,6 +13,7 @@ import {
     TableState,
 } from "..";
 import i18n from "../utils/i18n";
+import { getSelectionMessages } from "../data-table/utils/selection";
 import { ObjectsListProps } from "./ObjectsList";
 import _ from "lodash";
 
@@ -160,21 +161,13 @@ export function useTableWithSelectionCount<T extends ReferenceObject>(
         const total = tableProps.pagination?.total ?? rows.length;
         const ids = tableProps.ids ?? [];
 
-        const selectionInOtherPages = _.differenceBy(selection, rows, "id");
-        const allSelectedInPage =
-            rows.length > 0 && _.differenceBy(rows, selection, "id").length === 0;
-        const multiplePagesAvailable = total > rows.length;
-        const selectAllImplemented = ids.length > 0;
-
-        const isSelectionCountVisible =
-            selection.length === total ||
-            selectionInOtherPages.length > 0 ||
-            (allSelectedInPage && multiplePagesAvailable && selectAllImplemented);
-        if (isSelectionCountVisible) return [];
+        const hasSelectionNotifications =
+            getSelectionMessages(rows, selection, total, ids, [], undefined).length > 0;
+        if (hasSelectionNotifications) return [];
 
         return [
             {
-                message: i18n.t("There are {{count}} items selected on this page.", {
+                message: i18n.t("There is 1 item selected on this page.", {
                     count: selection.length,
                 }),
                 link: i18n.t("Clear selection"),
