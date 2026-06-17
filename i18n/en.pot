@@ -110,9 +110,10 @@ msgid "Search by name"
 msgstr ""
 
 msgid "There is 1 item selected on this page."
-msgid_plural "There are {{count}} items selected on this page."
-msgstr[0] ""
-msgstr[1] ""
+msgstr ""
+
+msgid "There are {{count}} items selected on this page."
+msgstr ""
 
 msgid "Select all"
 msgstr ""

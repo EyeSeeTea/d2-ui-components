@@ -165,11 +165,15 @@ export function useTableWithSelectionCount<T extends ReferenceObject>(
             getSelectionMessages(rows, selection, total, ids, [], undefined).length > 0;
         if (hasSelectionNotifications) return [];
 
+        const count = selection.length;
+        const message =
+            count === 1
+                ? i18n.t("There is 1 item selected on this page.")
+                : i18n.t("There are {{count}} items selected on this page.", { count });
+
         return [
             {
-                message: i18n.t("There is 1 item selected on this page.", {
-                    count: selection.length,
-                }),
+                message,
                 link: i18n.t("Clear selection"),
                 newSelection: [],
             },
