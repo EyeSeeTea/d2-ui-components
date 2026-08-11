@@ -14,6 +14,7 @@ interface ColumnSelectorDialogProps<T extends ReferenceObject> {
     onCancel: () => void;
     childrenTransfer?: React.ReactNode;
     keepDisabledColumns?: boolean;
+    allowEmptyColumns?: boolean;
 }
 
 type TableColumnsType<T> = (keyof T)[];
@@ -31,6 +32,7 @@ export function ColumnSelectorDialog<T extends ReferenceObject>(
         onCancel,
         allowReorderingColumns = true,
         keepDisabledColumns = true,
+        allowEmptyColumns = false,
     } = props;
     const sortableColumns = columns.map(
         ({ name, text: label, disabled }): TransferOption => ({
@@ -55,10 +57,11 @@ export function ColumnSelectorDialog<T extends ReferenceObject>(
 
     const updateSelectedColumns = React.useCallback<UpdateSelectedColumns<T>>(
         ({ selected }) => {
+            if (!allowEmptyColumns && selected.length === 0) return;
             // selected is always an empty array if the internal "Remove All ⇍" button is clicked
             onChange(mergeWithDisabled(selected));
         },
-        [onChange, mergeWithDisabled]
+        [onChange, mergeWithDisabled, allowEmptyColumns]
     );
 
     return (

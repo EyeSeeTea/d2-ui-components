@@ -64,6 +64,7 @@ export interface DataTableHeaderProps<T extends ReferenceObject> {
     globalActionComponents?: React.ReactNode;
     childrenTransfer?: React.ReactNode;
     keepDisabledColumns?: boolean;
+    allowEmptyColumns: boolean;
 }
 
 export function DataTableHeader<T extends ReferenceObject>(props: DataTableHeaderProps<T>) {
@@ -87,6 +88,7 @@ export function DataTableHeader<T extends ReferenceObject>(props: DataTableHeade
         globalActionComponents,
         childrenTransfer,
         keepDisabledColumns = true,
+        allowEmptyColumns = true,
     } = props;
 
     const { field, order } = sorting;
@@ -136,6 +138,7 @@ export function DataTableHeader<T extends ReferenceObject>(props: DataTableHeade
                     allowReorderingColumns={allowReorderingColumns}
                     childrenTransfer={childrenTransfer}
                     keepDisabledColumns={keepDisabledColumns}
+                    allowEmptyColumns={allowEmptyColumns}
                 />
             )}
             <TableHead>
