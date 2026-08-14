@@ -23,6 +23,7 @@ class OrgUnitSelectByGroup extends React.Component {
             selection: undefined,
         };
         this.groupCache = {};
+        this.orgUnitsInHierarchy = undefined;
 
         this.addToSelection = addToSelection.bind(this);
         this.removeFromSelection = removeFromSelection.bind(this);
@@ -85,9 +86,17 @@ class OrgUnitSelectByGroup extends React.Component {
                                   levelsToFilter.includes(orgUnit.level)
                               )
                             : organisationUnits;
-                        this.groupCache[groupId] = filterOrgUnits;
+
                         // Make a copy of the returned array to ensure that the cache won't be modified from elsewhere
-                        resolve(filterOrgUnits);
+                        const excludeOrgUnits = this.state.orgUnitsInHierarchy
+                            ? filterOrgUnits.filter(orgUnit =>
+                                  this.state.orgUnitsInHierarchy.has(orgUnit.id)
+                              )
+                            : filterOrgUnits;
+
+                        this.groupCache[groupId] = excludeOrgUnits;
+
+                        resolve(excludeOrgUnits);
                     })
                     .catch(err => {
                         this.setState({ loading: false });
@@ -113,6 +122,31 @@ class OrgUnitSelectByGroup extends React.Component {
         // Material-UI SelectField will change height depending on whether or not it has a value
         return renderDropdown.call(this, menuItems, label);
     }
+
+    componentDidMount() {
+        const { api } = this.context;
+        if (this.props.withinUserHierarchyInFilters) {
+            this.setState({ loading: true });
+            api.models.organisationUnits
+                .get({
+                    paging: false,
+                    fields: { id: true },
+                    withinUserHierarchy: this.props.withinUserHierarchyInFilters,
+                })
+                .getData()
+                .then(response => {
+                    if (response.objects.length > 0) {
+                        const orgUnitIdsSet = new Set(response.objects.map(ou => ou.id));
+                        this.setState({ orgUnitsInHierarchy: orgUnitIdsSet });
+                    }
+                    this.setState({ loading: false });
+                })
+                .catch(err => {
+                    console.error(`OrgUnitSelectByGroup: ${err.message}`);
+                    this.setState({ loading: false });
+                });
+        }
+    }
 }
 
 OrgUnitSelectByGroup.propTypes = {
@@ -134,7 +168,7 @@ OrgUnitSelectByGroup.propTypes = {
     // If currentRoot is set, only org units that are descendants of the
     // current root org unit will be added to or removed from the selection
     currentRoot: PropTypes.object,
-
+    withinUserHierarchyInFilters: PropTypes.bool,
     // TODO: Add group cache prop?
 };
 
