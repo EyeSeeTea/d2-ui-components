@@ -17,7 +17,7 @@ interface SelectProps {
     label?: string;
 }
 
-const SelectWrapper: React.FC<SelectProps> = React.memo(props => {
+const SelectWrapper: React.FC<React.PropsWithChildren<SelectProps>> = React.memo(props => {
     const { className, label, children } = props;
     return label ? (
         <DropdownForm className={className} label={label}>
