@@ -110,6 +110,7 @@ export interface DataTableProps<T extends ReferenceObject> {
     globalActionComponents?: React.ReactNode;
     childrenTransfer?: React.ReactNode;
     keepDisabledColumns?: boolean;
+    allowEmptyColumns?: boolean;
 }
 
 export function DataTable<T extends ReferenceObject = TableObject>(props: DataTableProps<T>) {
@@ -146,6 +147,7 @@ export function DataTable<T extends ReferenceObject = TableObject>(props: DataTa
         globalActionComponents,
         childrenTransfer,
         keepDisabledColumns = true,
+        allowEmptyColumns = true,
     } = props;
 
     const renderPosition = paginationOptions.renderPosition || defaultRenderPosition;
@@ -308,6 +310,7 @@ export function DataTable<T extends ReferenceObject = TableObject>(props: DataTa
                             globalActionComponents={globalActionComponents}
                             childrenTransfer={childrenTransfer}
                             keepDisabledColumns={keepDisabledColumns}
+                            allowEmptyColumns={allowEmptyColumns}
                         />
                         <DataTableBody
                             rows={rowObjects}
