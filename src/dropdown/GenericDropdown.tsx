@@ -1,4 +1,4 @@
-import { createTheme, FormControl, InputLabel, MuiThemeProvider } from "@material-ui/core";
+import { createMuiTheme, FormControl, InputLabel, MuiThemeProvider } from "@material-ui/core";
 import cyan from "@material-ui/core/colors/cyan";
 import React from "react";
 
@@ -30,7 +30,7 @@ export const DropdownForm: React.FC<React.PropsWithChildren<DropdownFormProps>> 
 );
 
 const getMaterialTheme = () =>
-    createTheme({
+    createMuiTheme({
         overrides: {
             MuiFormLabel: {
                 root: {

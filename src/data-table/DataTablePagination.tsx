@@ -41,8 +41,8 @@ export function DataTablePagination(props: DataTablePaginationProps) {
             count={total}
             rowsPerPage={pageSize}
             page={currentPage}
-            onPageChange={handleChangePage}
-            onRowsPerPageChange={handleChangePageSize}
+            onChangePage={handleChangePage}
+            onChangeRowsPerPage={handleChangePageSize}
         />
     );
 }

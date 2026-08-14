@@ -18,7 +18,7 @@ export const Help: React.FC<HelpProps> = ({ step, currentStepKey = "" }) => (
         title={`${step.label} - ${i18n.t("Help")}`}
         contents={step.help}
         initialIsOpen={step.helpDialogIsInitialOpen}
-        isVisible={step.help && step.key === currentStepKey}
+        isVisible={!!step.help && step.key === currentStepKey}
     />
 );
 

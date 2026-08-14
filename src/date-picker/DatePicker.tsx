@@ -1,5 +1,5 @@
 import MomentUtils from "@date-io/moment";
-import { createTheme, MuiThemeProvider } from "@material-ui/core";
+import { createMuiTheme, MuiThemeProvider } from "@material-ui/core";
 import {
     DatePicker as MuiDatePicker,
     DatePickerProps as MuiDatePickerProps,
@@ -7,7 +7,6 @@ import {
 } from "@material-ui/pickers";
 import { Dictionary } from "lodash";
 import moment from "moment";
-import PropTypes from "prop-types";
 import React, { CSSProperties } from "react";
 
 export interface DatePickerProps extends MuiDatePickerProps {
@@ -28,7 +27,7 @@ const colors: { filter: Dictionary<string>; form: Dictionary<string> } = {
 };
 
 const getMaterialTheme = (isFilter: boolean, colors: Dictionary<string>) =>
-    createTheme({
+    createMuiTheme({
         overrides: {
             ...(isFilter && {
                 MuiFormControl: {
@@ -71,14 +70,6 @@ export const DatePicker: React.FC<DatePickerProps> = ({
             </MuiPickersUtilsProvider>
         </MuiThemeProvider>
     );
-};
-
-DatePicker.propTypes = {
-    label: PropTypes.string,
-    value: PropTypes.object,
-    onChange: PropTypes.func.isRequired,
-    placeholder: PropTypes.string,
-    isFilter: PropTypes.bool,
 };
 
 DatePicker.defaultProps = {
