@@ -6,13 +6,16 @@ import {
     ReferenceObject,
     TableAction,
     TableColumn,
+    TableNotification,
     TablePagination,
     TableSelection,
     TableSorting,
     TableState,
 } from "..";
 import i18n from "../utils/i18n";
+import { getSelectionMessages } from "../data-table/utils/selection";
 import { ObjectsListProps } from "./ObjectsList";
+import _ from "lodash";
 
 export interface TableConfig<Obj extends ReferenceObject>
     extends Omit<
@@ -133,4 +136,49 @@ export function useObjectsTable<Obj extends ReferenceObject>(
         initialState,
         ids: state.ids,
     };
+}
+
+export function useTableWithSelectionCount<T extends ReferenceObject>(
+    config: TableConfig<T>,
+    getRows: GetRows<T>,
+    getAllIds?: GetAllIds<T>
+): ObjectsListProps<T> {
+    const tableProps = useObjectsTable(config, getRows, getAllIds);
+    const [selection, setSelection] = useState<TableSelection[]>([]);
+
+    const onChange = useCallback(
+        (newState: TableState<T>) => {
+            setSelection(newState.selection ?? []);
+            tableProps.onChange(newState);
+        },
+        [tableProps]
+    );
+
+    const tableNotifications = useMemo<TableNotification[]>(() => {
+        if (selection.length === 0) return [];
+
+        const rows = tableProps.rows;
+        const total = tableProps.pagination?.total ?? rows.length;
+        const ids = tableProps.ids ?? [];
+
+        const hasSelectionNotifications =
+            getSelectionMessages(rows, selection, total, ids, [], undefined).length > 0;
+        if (hasSelectionNotifications) return [];
+
+        const count = selection.length;
+        const message =
+            count === 1
+                ? i18n.t("There is 1 item selected on this page.")
+                : i18n.t("There are {{count}} items selected on this page.", { count });
+
+        return [
+            {
+                message,
+                link: i18n.t("Clear selection"),
+                newSelection: [],
+            },
+        ];
+    }, [selection, tableProps.rows, tableProps.pagination, tableProps.ids]);
+
+    return { ...tableProps, onChange, tableNotifications };
 }

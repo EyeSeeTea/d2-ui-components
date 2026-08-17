@@ -24,7 +24,7 @@ export interface ConfirmationDialogProps extends Partial<Omit<DialogProps, "titl
     disableSave?: boolean;
 }
 
-export const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
+export const ConfirmationDialog: React.FC<React.PropsWithChildren<ConfirmationDialogProps>> = ({
     title = "",
     description,
     onSave,

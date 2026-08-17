@@ -5,7 +5,7 @@ import { DropdownForm, DropdownItem } from "./GenericDropdown";
 
 export interface DropdownProps<Value extends string = string> {
     className?: string;
-    items: DropdownItem[];
+    items: DropdownItem<Value>[];
     onChange: (value: Value | undefined) => void;
     label?: string;
     value?: Value;
@@ -17,7 +17,7 @@ interface SelectProps {
     label?: string;
 }
 
-const SelectWrapper: React.FC<SelectProps> = React.memo(props => {
+const SelectWrapper: React.FC<React.PropsWithChildren<SelectProps>> = React.memo(props => {
     const { className, label, children } = props;
     return label ? (
         <DropdownForm className={className} label={label}>
@@ -28,7 +28,7 @@ const SelectWrapper: React.FC<SelectProps> = React.memo(props => {
     );
 });
 
-export const Dropdown: React.FC<DropdownProps> = React.memo(props => {
+const DropdownInner = <Value extends string = string>(props: DropdownProps<Value>) => {
     const { items, value, onChange, label, hideEmpty, className } = props;
 
     const selectValue =
@@ -39,7 +39,7 @@ export const Dropdown: React.FC<DropdownProps> = React.memo(props => {
             <Select
                 data-cy={label}
                 value={selectValue}
-                onChange={ev => onChange((ev.target.value as string) || undefined)}
+                onChange={ev => onChange((ev.target.value as Value) || undefined)}
                 MenuProps={{
                     getContentAnchorEl: null,
                     anchorOrigin: { vertical: "bottom", horizontal: "left" },
@@ -54,4 +54,6 @@ export const Dropdown: React.FC<DropdownProps> = React.memo(props => {
             </Select>
         </SelectWrapper>
     );
-});
+};
+
+export const Dropdown = React.memo(DropdownInner) as typeof DropdownInner;

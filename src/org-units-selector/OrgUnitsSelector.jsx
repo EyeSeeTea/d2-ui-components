@@ -46,6 +46,7 @@ export default class OrgUnitsSelector extends React.Component {
             fn: PropTypes.func,
         }),
         disabled: PropTypes.bool,
+        withinUserHierarchyInFilters: PropTypes.bool,
     };
 
     static defaultProps = {
@@ -67,6 +68,7 @@ export default class OrgUnitsSelector extends React.Component {
         showShortName: false,
         showNameSetting: false,
         disabled: false,
+        withinUserHierarchyInFilters: false,
     };
 
     static childContextTypes = {
@@ -141,7 +143,7 @@ export default class OrgUnitsSelector extends React.Component {
     }
 
     queryRoots({ search }) {
-        const { api, rootIds, listParams } = this.props;
+        const { api, rootIds, listParams, withinUserHierarchyInFilters } = this.props;
         const baseOptions = {
             fields: {
                 id: true,
@@ -160,6 +162,7 @@ export default class OrgUnitsSelector extends React.Component {
                 paging: true,
                 pageSize: 1000,
                 filter: { displayName: { ilike: search } },
+                ...(withinUserHierarchyInFilters ? { withinUserHierarchy: true } : {}),
             });
         } else if (rootIds) {
             let cancel = false;
@@ -327,6 +330,7 @@ export default class OrgUnitsSelector extends React.Component {
             selectableIds,
             initiallyExpanded = roots.length > 1 ? [] : roots.map(ou => ou.path),
             disabled,
+            withinUserHierarchyInFilters,
         } = this.props;
         const { filterByLevel, filterByGroup, filterByProgram, selectAll } = controls;
 
@@ -411,6 +415,9 @@ export default class OrgUnitsSelector extends React.Component {
                                                         levels={levels}
                                                         selected={selected}
                                                         currentRoot={currentRoot}
+                                                        withinUserHierarchyInFilters={
+                                                            withinUserHierarchyInFilters
+                                                        }
                                                         onUpdateSelection={
                                                             this.handleSelectionUpdate
                                                         }
@@ -432,6 +439,9 @@ export default class OrgUnitsSelector extends React.Component {
                                                         onItemSelection={this.changeOrgUnitGroup}
                                                         selectableIds={selectableIds}
                                                         selectableLevels={selectableLevels}
+                                                        withinUserHierarchyInFilters={
+                                                            withinUserHierarchyInFilters
+                                                        }
                                                     />
                                                 </div>
                                             )}

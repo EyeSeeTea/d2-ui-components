@@ -67,7 +67,12 @@ class OrgUnitSelectByLevel extends React.Component {
                 this.setState({ loading: true });
 
                 api.models.organisationUnits
-                    .get({ paging: false, level, fields: { id: true, path: true } })
+                    .get({
+                        paging: false,
+                        level,
+                        fields: { id: true, path: true },
+                        withinUserHierarchy: this.props.withinUserHierarchyInFilters,
+                    })
                     .getData()
                     .then(({ objects }) => objects)
                     .then(orgUnitArray => {
@@ -147,7 +152,7 @@ OrgUnitSelectByLevel.propTypes = {
             }
         }
     },
-
+    withinUserHierarchyInFilters: PropTypes.bool,
     // TODO: Add level cache prop?
 };
 
